@@ -1,78 +1,76 @@
-import 'package:qde_eco_bahor/core/error/failures.dart';
-import 'package:qde_eco_bahor/features/auth/data/models/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:qde_eco_bahor/core/utils/app_constants.dart';
 
-/// Моковый источник данных для аутентификации
-/// В реальном проекте здесь будет API вызов
+import '../../../../core/services/telegram_service.dart';
+import '../models/user_model.dart';
+
 abstract class AuthRemoteDataSource {
   Future<UserModel> login(String email, String password);
+
   Future<UserModel> register(String email, String password, String name);
+
   Future<void> logout();
+
   Future<UserModel?> getCurrentUser();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  // Моковое хранилище для демонстрации
   UserModel? _currentUser;
+  final firebaseAuth = FirebaseAuth.instance;
+  final db = FirebaseFirestore.instance;
 
   @override
   Future<UserModel> login(String email, String password) async {
-    // Имитация сетевой задержки
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Моковая валидация
-    if (email.isEmpty || password.isEmpty) {
-      throw const ValidationFailure('Email и пароль обязательны');
-    }
-
-    if (password.length < 6) {
-      throw const ValidationFailure('Пароль должен содержать минимум 6 символов');
-    }
-
-    // Моковый пользователь
-    _currentUser = UserModel(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      email: email,
-      name: email.split('@')[0],
-      avatarUrl: null,
-    );
-
     return _currentUser!;
   }
 
   @override
   Future<UserModel> register(String email, String password, String name) async {
-    // Имитация сетевой задержки
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Моковая валидация
-    if (email.isEmpty || password.isEmpty || name.isEmpty) {
-      throw const ValidationFailure('Все поля обязательны');
-    }
-
-    if (password.length < 6) {
-      throw const ValidationFailure('Пароль должен содержать минимум 6 символов');
-    }
-
-    // Моковый пользователь
-    _currentUser = UserModel(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      email: email,
-      name: name,
-      avatarUrl: null,
-    );
-
     return _currentUser!;
   }
 
   @override
   Future<void> logout() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     _currentUser = null;
   }
 
   @override
   Future<UserModel?> getCurrentUser() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _currentUser;
+    // 1. Анонимный вход в Firebase Auth
+    final userCredential = await firebaseAuth.signInAnonymously();
+    final uid = userCredential.user?.uid;
+
+    // 2. Сбор данных из Telegram WebApp
+    final tgId = TelegramService.userId?.toString() ?? '123456789';
+    final name = TelegramService.firstName ?? 'Test name';
+    final username = TelegramService.username ?? 'testUserName';
+
+    // 3. Запись / обновление профиля в Firestore
+    final userDocRef = db.collection(AppConstants.users).doc(tgId);
+    final docSnap = await userDocRef.get();
+
+    if (!docSnap.exists) {
+      final newUser = UserModel(
+        id: tgId,
+        userName: username,
+        name: name,
+        company: '',
+        number: '',
+        isModerated: false,
+        authUid: uid ?? '',
+      );
+
+      await userDocRef.set(newUser.toJson());
+    }
+
+    return UserModel(
+      id: tgId,
+      name: name,
+      userName: username,
+      company: '',
+      number: '',
+      authUid: uid ?? '',
+    );
   }
 }

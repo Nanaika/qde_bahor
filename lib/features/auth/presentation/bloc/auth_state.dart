@@ -1,11 +1,27 @@
-part of 'auth_bloc.dart';
+import '../../data/models/user_model.dart';
 
-@freezed
-class AuthState with _$AuthState {
-  const factory AuthState.initial() = _Initial;
-  const factory AuthState.loading() = _Loading;
-  const factory AuthState.authenticated(UserEntity user) = _Authenticated;
-  const factory AuthState.unauthenticated() = _Unauthenticated;
-  const factory AuthState.error(Failure failure) = _Error;
+abstract class AuthState {
+  const AuthState();
 }
 
+class AuthInitialState extends AuthState {
+  const AuthInitialState();
+}
+
+class AuthLoadingState extends AuthState {
+  const AuthLoadingState();
+}
+
+class AuthAuthenticatedState extends AuthState {
+  final UserModel user;
+  const AuthAuthenticatedState(this.user);
+}
+
+class AuthUnauthenticatedState extends AuthState {
+  const AuthUnauthenticatedState();
+}
+
+class AuthErrorState extends AuthState {
+  final dynamic failure;
+  const AuthErrorState(this.failure);
+}

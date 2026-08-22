@@ -12,7 +12,11 @@ class AppConstants {
   static const String defaultNotificationChannel = 'default_channel';
   static const String defaultNotificationChannelName = 'Default Channel';
 
+  //db collections names
+  static const String users = 'users';
+  static const String moderateUsers = 'moderateUsers';
+  static const String products = 'products';
+
   // Private constructor
   AppConstants._();
 }
-

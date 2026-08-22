@@ -1,15 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:qde_eco_bahor/core/di/injection_container.dart';
-import 'package:qde_eco_bahor/core/notifications/notification_service.dart';
 import 'package:qde_eco_bahor/core/router/app_router.dart';
 import 'package:qde_eco_bahor/core/services/theme_service.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
+
+import 'core/services/telegram_service.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,20 +20,10 @@ void main() async {
   await EasyLocalization.ensureInitialized();
 
   await initDependencies();
-
-  if (getIt.isRegistered<NotificationService>()) {
-    try {
-      final notificationService = getIt<NotificationService>();
-      await notificationService.initialize();
-
-      final token = await notificationService.getFCMToken();
-      if (token != null) {
-        print('FCM Token: $token');
-        print('Используйте этот токен для отправки тестовых уведомлений из Firebase Console');
-      }
-    } catch (e) {
-      print('Ошибка инициализации уведомлений: $e');
-    }
+  try {
+    TelegramService.init();
+  } catch (e) {
+    print('Not running inside Telegram or JS interop error: $e');
   }
 
   await SystemChrome.setPreferredOrientations([
@@ -45,8 +38,12 @@ void main() async {
       startLocale: Locale('en'),
       fallbackLocale: const Locale('en'),
       useOnlyLangCode: true,
-      child: BlocProvider(
-        create: (context) => getIt<AuthBloc>()..add(const AuthEvent.checkAuthStatus()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (context) => getIt<AuthBloc>(),
+          ),
+        ],
         child: const MyApp(),
       ),
     ),
@@ -88,34 +85,30 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ShowCaseWidget(
-      builder: (context) {
-        return ScreenUtilInit(
-          designSize: const Size(375, 812), // iPhone X design size
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) {
-            return MaterialApp.router(
-              title: LocaleKeys.app_name,
-              debugShowCheckedModeBanner: false,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-                useMaterial3: true,
-              ),
-              darkTheme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: Colors.blue,
-                  brightness: Brightness.dark,
-                ),
-                useMaterial3: true,
-              ),
-              themeMode: _themeMode,
-              routerConfig: AppRouter.router,
-            );
-          },
+    return ScreenUtilInit(
+      designSize: const Size(375, 812), // iPhone X design size
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp.router(
+          title: LocaleKeys.app_name,
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+          ),
+          themeMode: _themeMode,
+          routerConfig: AppRouter.router,
         );
       },
     );

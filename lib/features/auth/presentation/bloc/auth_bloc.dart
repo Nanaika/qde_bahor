@@ -1,70 +1,68 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:qde_eco_bahor/core/error/failures.dart';
-import 'package:qde_eco_bahor/features/auth/domain/entities/user_entity.dart';
-import 'package:qde_eco_bahor/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:qde_eco_bahor/features/auth/domain/usecases/login_usecase.dart';
-import 'package:qde_eco_bahor/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:qde_eco_bahor/features/auth/domain/usecases/register_usecase.dart';
+import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
 
-part 'auth_bloc.freezed.dart';
-part 'auth_event.dart';
-part 'auth_state.dart';
+import 'auth_event.dart';
+import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final LoginUseCase loginUseCase;
-  final RegisterUseCase registerUseCase;
-  final LogoutUseCase logoutUseCase;
-  final GetCurrentUserUseCase getCurrentUserUseCase;
+  final AuthRepository authRepository;
 
   AuthBloc({
-    required this.loginUseCase,
-    required this.registerUseCase,
-    required this.logoutUseCase,
-    required this.getCurrentUserUseCase,
-  }) : super(const AuthState.initial()) {
+    required this.authRepository,
+  }) : super(const AuthInitialState()) {
     on<AuthEvent>((event, emit) async {
-      await event.when(
-        login: (email, password) => _onLogin(email, password, emit),
-        register: (email, password, name) => _onRegister(email, password, name, emit),
-        logout: () => _onLogout(emit),
-        checkAuthStatus: () => _onCheckAuthStatus(emit),
-      );
+      if (event is LoginEvent) {
+        await _onLogin(event.email, event.password, emit);
+      } else if (event is RegisterEvent) {
+        await _onRegister(event.email, event.password, event.name, emit);
+      } else if (event is LogoutEvent) {
+        await _onLogout(emit);
+      } else if (event is CheckAuthStatusEvent) {
+        await _onCheckAuthStatus(emit);
+      }
     });
   }
 
   Future<void> _onLogin(String email, String password, Emitter<AuthState> emit) async {
-    emit(const AuthState.loading());
-    final result = await loginUseCase(LoginParams(email: email, password: password));
-    result.fold(
-      (failure) => emit(AuthState.error(failure)),
-      (user) => emit(AuthState.authenticated(user)),
-    );
+    emit(const AuthLoadingState());
+    try {
+      final user = await authRepository.login(email, password);
+      emit(AuthAuthenticatedState(user));
+    } catch (failure) {
+      emit(AuthErrorState(failure));
+    }
   }
 
   Future<void> _onRegister(String email, String password, String name, Emitter<AuthState> emit) async {
-    emit(const AuthState.loading());
-    final result = await registerUseCase(RegisterParams(email: email, password: password, name: name));
-    result.fold(
-      (failure) => emit(AuthState.error(failure)),
-      (user) => emit(AuthState.authenticated(user)),
-    );
+    emit(const AuthLoadingState());
+    try {
+      final user = await authRepository.register(email, password, name);
+      emit(AuthAuthenticatedState(user));
+    } catch (failure) {
+      emit(AuthErrorState(failure));
+    }
   }
 
   Future<void> _onLogout(Emitter<AuthState> emit) async {
-    emit(const AuthState.loading());
-    final result = await logoutUseCase();
-    result.fold(
-      (failure) => emit(AuthState.error(failure)),
-      (_) => emit(const AuthState.unauthenticated()),
-    );
+    emit(const AuthLoadingState());
+    try {
+      await authRepository.logout();
+      emit(const AuthUnauthenticatedState());
+    } catch (failure) {
+      emit(AuthErrorState(failure));
+    }
   }
 
   Future<void> _onCheckAuthStatus(Emitter<AuthState> emit) async {
-    final result = await getCurrentUserUseCase();
-    result.fold(
-      (failure) => emit(AuthState.error(failure)),
-      (user) => user != null ? emit(AuthState.authenticated(user)) : emit(const AuthState.unauthenticated()),
-    );
+    try {
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        emit(AuthAuthenticatedState(user));
+      } else {
+        emit(const AuthUnauthenticatedState());
+      }
+    } catch (failure) {
+      emit(AuthErrorState(failure));
+    }
   }
 }

@@ -1,37 +1,64 @@
-import 'package:qde_eco_bahor/features/auth/domain/entities/user_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class UserModel extends UserEntity {
+class UserModel extends Equatable {
+  final String id;
+  final String userName;
+  final String name;
+  final String company;
+  final String number;
+  final String authUid;
+  final bool isModerated;
+  final DateTime? createdAt;
+
   const UserModel({
-    required super.id,
-    required super.email,
-    required super.name,
-    super.avatarUrl,
+    required this.id,
+    required this.userName,
+    required this.name,
+    required this.company,
+    required this.number,
+    required this.authUid,
+    this.isModerated = false,
+    this.createdAt,
   });
 
+  // Из JSON / Firestore Document
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String,
-      avatarUrl: json['avatarUrl'] as String?,
+      id: json['id'] as String? ?? '',
+      userName: json['userName'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      company: json['company'] as String? ?? '',
+      number: json['number'] as String? ?? '',
+      authUid: json['authUid'] as String? ?? '',
+      isModerated: json['isModerated'] as bool? ?? false,
+      createdAt: json['createdAt'] != null ? (json['createdAt'] as Timestamp).toDate() : null,
     );
   }
 
+  // В JSON для сохранения в Firestore
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'email': email,
+      'userName': userName,
       'name': name,
-      'avatarUrl': avatarUrl,
+      'company': company,
+      'number': number,
+      'authUid': authUid,
+      'isModerated': isModerated,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     };
   }
 
-  UserEntity toEntity() {
-    return UserEntity(
-      id: id,
-      email: email,
-      name: name,
-      avatarUrl: avatarUrl,
-    );
-  }
+  @override
+  List<Object?> get props => [
+        id,
+        userName,
+        name,
+        company,
+        number,
+        authUid,
+        isModerated,
+        createdAt,
+      ];
 }

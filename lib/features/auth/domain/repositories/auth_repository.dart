@@ -1,11 +1,9 @@
-import 'package:dartz/dartz.dart';
-import 'package:qde_eco_bahor/core/error/failures.dart';
-import 'package:qde_eco_bahor/features/auth/domain/entities/user_entity.dart';
+import 'package:qde_eco_bahor/features/auth/data/models/user_model.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, UserEntity>> login(String email, String password);
-  Future<Either<Failure, UserEntity>> register(String email, String password, String name);
-  Future<Either<Failure, Unit>> logout();
-  Future<Either<Failure, UserEntity?>> getCurrentUser();
-  Future<Either<Failure, bool>> isAuthenticated();
+  Future<UserModel> login(String email, String password);
+  Future<UserModel> register(String email, String password, String name);
+  Future<void> logout();
+  Future<UserModel?> getCurrentUser();
+  Future<bool> isAuthenticated();
 }
