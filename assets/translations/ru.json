@@ -1,0 +1,74 @@
+{
+  "app_name": "Flutter Шаблон",
+  "home": {
+    "title": "Главная",
+    "welcome": "Добро пожаловать в Flutter Шаблон",
+    "description": "Это шаблонный проект с Clean Architecture",
+    "auth_module": "Аутентификация",
+    "auth_module_desc": "Модуль входа и регистрации с моковыми данными",
+    "auth_module_tooltip": "Нажмите для перехода к модулю аутентификации",
+    "counter_module": "Счетчик",
+    "counter_module_desc": "Простой счетчик с операциями + и -",
+    "counter_module_tooltip": "Нажмите для перехода к модулю счетчика (требуется авторизация)",
+    "example_module": "Пример модуля",
+    "example_module_desc": "Пример модуля с данными из API",
+    "example_module_tooltip": "Нажмите для перехода к примеру модуля",
+    "auth_status": "Статус авторизации",
+    "logged_in": "Вход выполнен",
+    "not_authorized": "Не авторизован"
+  },
+  "auth": {
+    "login": "Вход",
+    "register": "Регистрация",
+    "logout": "Выйти",
+    "welcome": "Добро пожаловать, {name}",
+    "email": "Email",
+    "email_required": "Введите email",
+    "email_invalid": "Введите корректный email",
+    "name": "Имя",
+    "name_required": "Введите имя",
+    "password": "Пароль",
+    "password_required": "Введите пароль",
+    "password_min_length": "Пароль должен содержать минимум 6 символов",
+    "submit": "Отправить",
+    "no_account": "Нет аккаунта? Зарегистрироваться",
+    "has_account": "Уже есть аккаунт? Войти"
+  },
+  "counter": {
+    "title": "Счетчик",
+    "login_required": "Войдите в систему для использования счетчика",
+    "user": "Пользователь:",
+    "decrement": "Уменьшить",
+    "decrement_tooltip": "Нажмите для уменьшения значения на 1",
+    "reset": "Сброс",
+    "reset_tooltip": "Нажмите для сброса значения до 0",
+    "increment": "Увеличить",
+    "increment_tooltip": "Нажмите для увеличения значения на 1",
+    "description": "Это пример простого счетчика. Используйте кнопки для изменения значения."
+  },
+  "example": {
+    "title": "Пример",
+    "load_data": "Загрузить данные",
+    "refresh": "Обновить",
+    "data_loaded": "Данные успешно загружены",
+    "error_occurred": "Произошла ошибка"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "cancel": "Отмена",
+    "ok": "ОК"
+  },
+  "language": {
+    "select": "Выберите язык",
+    "english": "English",
+    "russian": "Русский",
+    "change": "Изменить язык"
+  },
+  "theme": {
+    "toggle": "Переключить тему"
+  }
+}
+
+

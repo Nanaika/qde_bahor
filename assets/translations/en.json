@@ -1,0 +1,74 @@
+{
+  "app_name": "Flutter Template",
+  "home": {
+    "title": "Home",
+    "welcome": "Welcome to Flutter Template",
+    "description": "This is a template project with Clean Architecture",
+    "auth_module": "Authentication",
+    "auth_module_desc": "Login and registration module with mock data",
+    "auth_module_tooltip": "Tap to go to authentication module",
+    "counter_module": "Counter",
+    "counter_module_desc": "Simple counter with + and - operations",
+    "counter_module_tooltip": "Tap to go to counter module (requires authorization)",
+    "example_module": "Example Module",
+    "example_module_desc": "Example module with data from API",
+    "example_module_tooltip": "Tap to go to example module",
+    "auth_status": "Authorization Status",
+    "logged_in": "Logged in",
+    "not_authorized": "Not authorized"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "welcome": "Welcome, {name}",
+    "email": "Email",
+    "email_required": "Enter email",
+    "email_invalid": "Enter a valid email",
+    "name": "Name",
+    "name_required": "Enter name",
+    "password": "Password",
+    "password_required": "Enter password",
+    "password_min_length": "Password must contain at least 6 characters",
+    "submit": "Submit",
+    "no_account": "No account? Register",
+    "has_account": "Already have an account? Login"
+  },
+  "counter": {
+    "title": "Counter",
+    "login_required": "Please login to use the counter",
+    "user": "User:",
+    "decrement": "Decrement",
+    "decrement_tooltip": "Tap to decrease value by 1",
+    "reset": "Reset",
+    "reset_tooltip": "Tap to reset value to 0",
+    "increment": "Increment",
+    "increment_tooltip": "Tap to increase value by 1",
+    "description": "This is an example of a simple counter. Use the buttons to change the value."
+  },
+  "example": {
+    "title": "Example",
+    "load_data": "Load Data",
+    "refresh": "Refresh",
+    "data_loaded": "Data loaded successfully",
+    "error_occurred": "An error occurred"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "ok": "OK"
+  },
+  "language": {
+    "select": "Select Language",
+    "english": "English",
+    "russian": "Russian",
+    "change": "Change language"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  }
+}
+
+
