@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 
 import '../../../core/network/network_info.dart';
@@ -11,7 +13,10 @@ class AddProductRepositoryImpl implements AddProductRepository {
   AddProductRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
 
   @override
-  Future<dynamic> add(ProductModel item) async {
-    await remoteDataSource.add(item);
+  Future<dynamic> add(
+    ProductModel item,
+    Uint8List imageBytes,
+  ) async {
+    await remoteDataSource.add(item, imageBytes);
   }
 }

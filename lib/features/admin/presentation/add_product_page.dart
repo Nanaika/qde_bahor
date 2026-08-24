@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -215,7 +214,9 @@ class _AddProductPageState extends State<AddProductPage> {
                               description: descController.text,
                               photoUrl: '',
                               variants: variants);
-                          context.read<AddProductBloc>().add(AddEvent(model));
+                          if (selectedImageBytes != null) {
+                            context.read<AddProductBloc>().add(AddEvent(model, selectedImageBytes!));
+                          }
                         },
                         child: const Text('Save'),
                       ),
@@ -277,7 +278,7 @@ class SelectProductTypeDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('Cancel'),
         ),
       ],
     );

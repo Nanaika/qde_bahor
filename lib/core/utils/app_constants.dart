@@ -18,6 +18,9 @@ class AppConstants {
   static const String products = 'products';
   static const String productsTypes = 'productsTypes';
 
+  //storage names
+  static const String productsImages = 'products_images';
+
   // Private constructor
   AppConstants._();
 }

@@ -1,5 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 
 abstract class AddProductRepository {
-  Future add(ProductModel item);
+  Future add(
+    ProductModel item,
+    Uint8List imageBytes,
+  );
 }
