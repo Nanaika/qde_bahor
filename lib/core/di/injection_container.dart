@@ -8,11 +8,15 @@ import 'package:qde_eco_bahor/core/network/network_info.dart';
 import 'package:qde_eco_bahor/core/services/analytics_service.dart';
 import 'package:qde_eco_bahor/core/services/storage_service.dart';
 import 'package:qde_eco_bahor/core/services/theme_service.dart';
+import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/add_product/add_product_remote_datasource.dart';
+import 'package:qde_eco_bahor/features/admin/add_product/add_product_repository.dart';
 import 'package:qde_eco_bahor/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/admin/add_product/add_product_repository_impl.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../firebase_options.dart';
 
@@ -63,9 +67,25 @@ Future<void> initDependencies() async {
     ),
   );
 
+  getIt.registerLazySingleton<AddProductRemoteDataSource>(
+    () => AddProductRemoteDataSourceImpl(),
+  );
+
+  getIt.registerLazySingleton<AddProductRepository>(
+    () => AddProductRepositoryImpl(
+      remoteDataSource: getIt(),
+      networkInfo: getIt(),
+    ),
+  );
+
   getIt.registerFactory<AuthBloc>(
     () => AuthBloc(
       authRepository: getIt(),
+    ),
+  );
+  getIt.registerFactory<AddProductBloc>(
+    () => AddProductBloc(
+      repository: getIt(),
     ),
   );
 }

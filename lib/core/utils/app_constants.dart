@@ -16,6 +16,7 @@ class AppConstants {
   static const String users = 'users';
   static const String moderateUsers = 'moderateUsers';
   static const String products = 'products';
+  static const String productsTypes = 'productsTypes';
 
   // Private constructor
   AppConstants._();

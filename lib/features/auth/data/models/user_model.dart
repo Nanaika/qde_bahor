@@ -7,7 +7,6 @@ class UserModel extends Equatable {
   final String name;
   final String company;
   final String number;
-  final String authUid;
   final bool isModerated;
   final DateTime? createdAt;
 
@@ -17,7 +16,6 @@ class UserModel extends Equatable {
     required this.name,
     required this.company,
     required this.number,
-    required this.authUid,
     this.isModerated = false,
     this.createdAt,
   });
@@ -30,7 +28,6 @@ class UserModel extends Equatable {
       name: json['name'] as String? ?? '',
       company: json['company'] as String? ?? '',
       number: json['number'] as String? ?? '',
-      authUid: json['authUid'] as String? ?? '',
       isModerated: json['isModerated'] as bool? ?? false,
       createdAt: json['createdAt'] != null ? (json['createdAt'] as Timestamp).toDate() : null,
     );
@@ -44,7 +41,6 @@ class UserModel extends Equatable {
       'name': name,
       'company': company,
       'number': number,
-      'authUid': authUid,
       'isModerated': isModerated,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     };
@@ -57,7 +53,6 @@ class UserModel extends Equatable {
         name,
         company,
         number,
-        authUid,
         isModerated,
         createdAt,
       ];

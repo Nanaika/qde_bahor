@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/core/services/telegram_service.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
 import '../../../../core/theme/theme_text_styles.dart';
@@ -73,6 +74,11 @@ class _HomePageState extends State<HomePage> {
                   style: ThemeTextStyles.bodyLarge(context),
                   textAlign: TextAlign.center,
                 ),
+                ElevatedButton(
+                    onPressed: () {
+                      context.push('/admin_home');
+                    },
+                    child: Text('Admin')),
               ],
             ),
           );

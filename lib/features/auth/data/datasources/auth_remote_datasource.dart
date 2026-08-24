@@ -37,16 +37,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel?> getCurrentUser() async {
-    // 1. Анонимный вход в Firebase Auth
-    final userCredential = await firebaseAuth.signInAnonymously();
-    final uid = userCredential.user?.uid;
+    // 1. Анонимный вход в Firebase Auth (проверяем текущую сессию)
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      final userCredential = await firebaseAuth.signInAnonymously();
+      user = userCredential.user;
+    }
 
     // 2. Сбор данных из Telegram WebApp
     final tgId = TelegramService.userId?.toString() ?? '123456789';
     final name = TelegramService.firstName ?? 'Test name';
     final username = TelegramService.username ?? 'testUserName';
 
-    // 3. Запись / обновление профиля в Firestore
+    // 3. Запись / получение профиля из Firestore
     final userDocRef = db.collection(AppConstants.users).doc(tgId);
     final docSnap = await userDocRef.get();
 
@@ -58,19 +61,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         company: '',
         number: '',
         isModerated: false,
-        authUid: uid ?? '',
       );
 
       await userDocRef.set(newUser.toJson());
+      return newUser;
     }
 
-    return UserModel(
-      id: tgId,
-      name: name,
-      userName: username,
-      company: '',
-      number: '',
-      authUid: uid ?? '',
-    );
+    return UserModel.fromJson(docSnap.data()!);
   }
 }
