@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
@@ -18,9 +22,29 @@ class AddProductPage extends StatefulWidget {
 
 class _AddProductPageState extends State<AddProductPage> {
   ProductType? selectedProductType;
+  Uint8List? selectedImageBytes;
   List<ProductVariant> variants = [];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
+
+  Future<void> _pickImage() async {
+    try {
+      final List<PlatformFile> files = await FilePicker.pickFiles(
+        type: FileType.image,
+      );
+
+      if (files.isNotEmpty) {
+        final PlatformFile file = files.first;
+        final Uint8List bytes = await file.readAsBytes();
+
+        setState(() {
+          selectedImageBytes = bytes;
+        });
+      }
+    } catch (e) {
+      debugPrint('Pick image error: $e');
+    }
+  }
 
   void openTypePicker(BuildContext context) async {
     final result = await SelectProductTypeDialog.show(
@@ -93,7 +117,36 @@ class _AddProductPageState extends State<AddProductPage> {
                       SizedBox(height: ThemeDimensions.paddingM),
                       Text('Photo'),
                       SizedBox(height: ThemeDimensions.paddingM),
-                      ElevatedButton(onPressed: () {}, child: Text('pick photo')),
+                      if (selectedImageBytes != null)
+                        Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.memory(
+                                selectedImageBytes!,
+                                height: 180,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.cancel, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  selectedImageBytes = null;
+                                });
+                              },
+                            ),
+                          ],
+                        )
+                      else
+                        ElevatedButton.icon(
+                          onPressed: _pickImage,
+                          icon: const Icon(Icons.photo_library),
+                          label: const Text('pick photo'),
+                        ),
+                      SizedBox(height: ThemeDimensions.paddingM),
                       SizedBox(height: ThemeDimensions.paddingM),
                       Text('ProductType'),
                       SizedBox(height: ThemeDimensions.paddingM),
@@ -155,7 +208,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       ),
                       SizedBox(height: ThemeDimensions.paddingL),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           final model = ProductModel(
                               productType: selectedProductType!,
                               name: nameController.text,
@@ -294,7 +347,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                widget.variant == null ? 'Добавить вариант фасовки' : 'Редактировать вариант',
+                widget.variant == null ? 'Add variant' : 'Edit variant',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
@@ -303,10 +356,10 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Название (например: Мешок 10 кг)',
+                  labelText: 'Name (example: Box 10 kg)',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'Заполните название' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
               ),
               const SizedBox(height: 12),
 
@@ -318,18 +371,18 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       controller: _priceController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Цена',
+                        labelText: 'Price',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (v) => v == null || v.isEmpty ? 'Укажите цену' : null,
+                      validator: (v) => v == null || v.isEmpty ? 'Enter price' : null,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<UnitType>(
-                      value: _selectedUnit,
+                      initialValue: _selectedUnit,
                       decoration: const InputDecoration(
-                        labelText: 'Ед. изм.',
+                        labelText: 'Unit',
                         border: OutlineInputBorder(),
                       ),
                       items: UnitType.values.map((unit) {
@@ -355,10 +408,10 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       controller: _netWeightController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Нетто (кг)',
+                        labelText: 'Netto (кг)',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (v) => v == null || v.isEmpty ? 'Укажите нетто' : null,
+                      validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -367,10 +420,10 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       controller: _grossWeightController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Брутто (кг)',
+                        labelText: 'Brutto (кг)',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (v) => v == null || v.isEmpty ? 'Укажите брутто' : null,
+                      validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
                     ),
                   ),
                 ],
@@ -412,7 +465,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: _submit,
-                child: const Text('Сохранить вариант'),
+                child: const Text('Save'),
               ),
             ],
           ),
