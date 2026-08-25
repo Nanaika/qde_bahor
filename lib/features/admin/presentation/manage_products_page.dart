@@ -84,6 +84,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final product = products[index];
+                print('===============${product.productType.id}');
                 return Card(
                   clipBehavior: Clip.antiAlias,
                   child: ListTile(
@@ -106,7 +107,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                           '${product.date ?? 0}',
                         ),
                         Text(
-                          '${product.productType}',
+                          '${product.productType.name}',
                         ),
                         Text(
                           '${product.description}',

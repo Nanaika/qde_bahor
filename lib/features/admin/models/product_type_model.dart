@@ -7,10 +7,31 @@ class ProductTypeModel {
     required this.name,
   });
 
-  factory ProductTypeModel.fromJson(Map<String, dynamic> json) {
+  factory ProductTypeModel.fromJson(dynamic json) {
+    // Если из базы пришел null или не Map — возвращаем пустой объект
+    if (json == null || json is! Map) {
+      return ProductTypeModel(id: '', name: {});
+    }
+
+    // Приводим внешнюю Map к универсальному виду (защита от Map<dynamic, dynamic>)
+    final map = Map<String, dynamic>.from(json);
+
+    final Map<String, String> parsedName = {};
+
+    // Забираем поле 'name'
+    final rawName = map['name'];
+    if (rawName is Map) {
+      rawName.forEach((key, value) {
+        if (key != null && value != null && value.toString().isNotEmpty) {
+          parsedName[key.toString()] = value.toString();
+        }
+      });
+    }
+    print('111111111111============${parsedName}');
+    print('111111111111============${map['id']}');
     return ProductTypeModel(
-      id: json['id'] as String? ?? '',
-      name: Map<String, String>.from(json['name'] as Map? ?? {}),
+      id: map['id']?.toString() ?? '',
+      name: parsedName,
     );
   }
 
@@ -20,6 +41,7 @@ class ProductTypeModel {
       };
 
   String getName(String langCode) {
-    return name[langCode] ?? name['ru'] ?? name.values.firstWhere((e) => e.isNotEmpty, orElse: () => 'Без названия');
+    if (name.isEmpty) return 'No name';
+    return name[langCode] ?? name['ru'] ?? name.values.firstWhere((e) => e.isNotEmpty, orElse: () => 'No name');
   }
 }

@@ -42,48 +42,29 @@ class ProductModel {
   }
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    print('====######  ${json}');
+
     return ProductModel(
       date: json['date'] as Timestamp?,
       id: json['id'] as String? ?? '',
-      productType: _parseProductType(json['productType']) ?? ProductTypeModel(id: '', name: {}),
+      productType: ProductTypeModel.fromJson(json['productType']),
       name: json['name'] as String? ?? '',
       description: json['description'] as String? ?? '',
       photoUrl: json['photoUrl'] as String? ?? '',
       variants: (json['variants'] as List<dynamic>?)
-              ?.map((e) => ProductVariant.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => ProductVariant.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList() ??
           [],
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'date': date,
-      'id': id,
-      'productType': productType.name,
-      'name': name,
-      'description': description,
-      'photoUrl': photoUrl,
-      'variants': variants.map((v) => v.toJson()).toList(),
-    };
-  }
-}
-
-ProductTypeModel? _parseProductType(dynamic jsonValue) {
-  if (jsonValue == null) return null;
-
-// Если в Firestore лежит полноценный объект/Map
-  if (jsonValue is Map<String, dynamic>) {
-    return ProductTypeModel.fromJson(jsonValue);
-  }
-
-// Фолбэк: если осталась старая запись, где хранился только String (например, ID или имя)
-  if (jsonValue is String) {
-    return ProductTypeModel(
-      id: jsonValue,
-      name: {'ru': jsonValue},
-    );
-  }
-
-  return null;
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
+        'productType': productType.toJson(),
+        'name': name,
+        'description': description,
+        'photoUrl': photoUrl,
+        'variants': variants.map((v) => v.toJson()).toList(),
+      };
 }

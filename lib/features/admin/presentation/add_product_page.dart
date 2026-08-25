@@ -227,6 +227,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               description: descController.text,
                               photoUrl: '',
                               variants: variants);
+                          print('================${model.productType.name}');
                           if (selectedImageBytes != null) {
                             context.read<AddProductBloc>().add(AddEvent(model, selectedImageBytes!));
                           }
