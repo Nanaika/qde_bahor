@@ -11,12 +11,17 @@ import 'package:qde_eco_bahor/core/services/theme_service.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_repository.dart';
+import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/admin/add_product/add_product_repository_impl.dart';
+import '../../features/admin/manage_products/manage_products_remote_datasource.dart';
+import '../../features/admin/manage_products/manage_products_repository.dart';
+import '../../features/admin/manage_products/manage_products_repository_impl.dart';
+import '../../features/admin/manage_products/product_types_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../firebase_options.dart';
 
@@ -78,6 +83,17 @@ Future<void> initDependencies() async {
     ),
   );
 
+  getIt.registerLazySingleton<ManageProductsRemoteDataSource>(
+    () => ManageProductsRemoteDataSourceImpl(),
+  );
+
+  getIt.registerLazySingleton<ManageProductsRepository>(
+    () => ManageProductsRepositoryImpl(
+      remoteDataSource: getIt(),
+      networkInfo: getIt(),
+    ),
+  );
+
   getIt.registerFactory<AuthBloc>(
     () => AuthBloc(
       authRepository: getIt(),
@@ -85,6 +101,16 @@ Future<void> initDependencies() async {
   );
   getIt.registerFactory<AddProductBloc>(
     () => AddProductBloc(
+      repository: getIt(),
+    ),
+  );
+  getIt.registerFactory<ManageProductsBloc>(
+    () => ManageProductsBloc(
+      repository: getIt(),
+    ),
+  );
+  getIt.registerFactory<ProductTypesBloc>(
+    () => ProductTypesBloc(
       repository: getIt(),
     ),
   );

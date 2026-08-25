@@ -4,7 +4,6 @@ import 'dart:js_interop';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 
 import 'dart:convert';

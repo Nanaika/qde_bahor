@@ -1,10 +1,308 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/models/product_type_model.dart';
 
-class AddProductTypePage extends StatelessWidget {
+import '../manage_products/manage_products_bloc.dart';
+import '../manage_products/manage_products_event.dart';
+import '../manage_products/manage_products_state.dart';
+import '../manage_products/product_types_bloc.dart';
+
+class AddProductTypePage extends StatefulWidget {
   const AddProductTypePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
+  State<AddProductTypePage> createState() => _AddProductTypePageState();
+}
+
+class _AddProductTypePageState extends State<AddProductTypePage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProductTypesBloc>().add(GetProductsTypesEvent());
   }
+
+  void _showTypeBottomSheet(BuildContext context, {ProductTypeModel? typeToEdit}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Чтобы шторка поднималась при открытии клавиатуры
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return EditProductTypeSheet(
+          initialNameMap: typeToEdit?.name, // Передаем существующие названия, если редактируем
+          onSubmit: (nameMap) {
+            if (typeToEdit == null) {
+              // СОЗДАНИЕ
+              final newType = ProductTypeModel(id: '', name: nameMap);
+              context.read<ProductTypesBloc>().add(AddProductsTypeEvent(newType));
+            } else {
+              // РЕДАКТИРОВАНИЕ (сохраняем оригинальный id)
+              final updatedType = ProductTypeModel(id: typeToEdit.id, name: nameMap);
+              context.read<ProductTypesBloc>().add(EditProductsTypeEvent(updatedType));
+            }
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage types'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              _showTypeBottomSheet(context);
+            },
+          ),
+        ],
+      ),
+      body: BlocBuilder<ProductTypesBloc, ManageProductsState>(
+        builder: (context, state) {
+          // 1. Состояние загрузки
+          if (state is ManageProductsLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // 2. Состояние ошибки
+          if (state is ManageProductsError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${state.failure.message}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Повторный запрос данных
+                      context.read<ManageProductsBloc>().add(GetProductsTypesEvent());
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // 3. Состояние успеха
+          if (state is ManageProductsTypeSuccess) {
+            final types = state.types;
+
+            // Если список пуст
+            if (types.isEmpty) {
+              return const Center(
+                child: Text('No types'),
+              );
+            }
+
+            // Список товаров
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: types.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final type = types[index];
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    title: Row(
+                      children: type.name.entries.map((entry) {
+                        final lang = entry.key.toUpperCase(); // 'RU', 'UZ', 'EN'
+                        final value = entry.value; // 'Напитки'
+
+                        return Chip(
+                          label: Text('$lang: $value'),
+                        );
+                      }).toList(),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () {
+                            _showTypeBottomSheet(context, typeToEdit: type);
+                            // TODO: Редактировать товар
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _showDeleteDialog(context, type.id);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+}
+
+class EditProductTypeSheet extends StatefulWidget {
+  final Map<String, String>? initialNameMap; // Передаем сюда type.name при редактировании
+  final Function(Map<String, String> nameMap) onSubmit;
+
+  const EditProductTypeSheet({
+    super.key,
+    this.initialNameMap, // null -> режим создания, не null -> режим редактирования
+    required this.onSubmit,
+  });
+
+  @override
+  State<EditProductTypeSheet> createState() => _EditProductTypeSheetState();
+}
+
+class _EditProductTypeSheetState extends State<EditProductTypeSheet> {
+  late final Map<String, TextEditingController> _controllers;
+
+  bool get isEdit => widget.initialNameMap != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      'ru': TextEditingController(text: widget.initialNameMap?['ru'] ?? ''),
+      'uz': TextEditingController(text: widget.initialNameMap?['uz'] ?? ''),
+    };
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _submit() {
+    final Map<String, String> nameMap = {};
+
+    _controllers.forEach((lang, controller) {
+      final text = controller.text.trim();
+      if (text.isNotEmpty) {
+        nameMap[lang] = text;
+      }
+    });
+
+    if (nameMap.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter name at least in one'),
+        ),
+      );
+      return;
+    }
+
+    widget.onSubmit(nameMap);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: bottomInset + 16,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isEdit ? 'Edit product type' : 'Add product type',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controllers['ru'],
+              decoration: const InputDecoration(
+                labelText: 'Name (RU)',
+                hintText: 'Example: Напитки',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controllers['uz'],
+              decoration: const InputDecoration(
+                labelText: 'Name (UZ)',
+                hintText: 'Example: Ichimliklar',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: Text(
+                isEdit ? 'Save' : 'Add',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void _showDeleteDialog(BuildContext context, String typeId) {
+  showCupertinoDialog(
+    context: context,
+    builder: (ctx) => CupertinoAlertDialog(
+      title: const Text('Delete product type?'),
+      content: const Text('It is cannot be undone'),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(
+          isDestructiveAction: true, // Делает текст красным
+          onPressed: () {
+            Navigator.pop(ctx);
+
+            // Вызов события BLoC или функции удаления:
+            context.read<ProductTypesBloc>().add(DeleteProductsTypeEvent(typeId));
+          },
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
 }

@@ -7,10 +7,12 @@ import 'package:qde_eco_bahor/core/di/injection_container.dart';
 import 'package:qde_eco_bahor/core/router/app_router.dart';
 import 'package:qde_eco_bahor/core/services/theme_service.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
 
 import 'core/services/telegram_service.dart';
+import 'features/admin/manage_products/product_types_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +45,12 @@ void main() async {
           ),
           BlocProvider<AddProductBloc>(
             create: (context) => getIt<AddProductBloc>(),
+          ),
+          BlocProvider<ManageProductsBloc>(
+            create: (context) => getIt<ManageProductsBloc>(),
+          ),
+          BlocProvider<ProductTypesBloc>(
+            create: (context) => getIt<ProductTypesBloc>(),
           ),
         ],
         child: const MyApp(),

@@ -23,6 +23,14 @@ class HomePageAdmin extends StatelessWidget {
                 context.push('/add_product_type');
               },
               child: Text('add type')),
+          SizedBox(
+            height: ThemeDimensions.paddingM,
+          ),
+          ElevatedButton(
+              onPressed: () {
+                context.push('/manage_products');
+              },
+              child: Text('Manage products')),
         ],
       ),
     );

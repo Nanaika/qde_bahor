@@ -4,6 +4,8 @@ import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
 import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
+import '../../features/admin/presentation/manage_products_page.dart';
+
 class AppRouter {
   static GoRouter get router => _router;
 
@@ -29,6 +31,11 @@ class AppRouter {
         path: '/admin_home',
         name: 'admin_home',
         builder: (context, state) => const HomePageAdmin(),
+      ),
+      GoRoute(
+        path: '/manage_products',
+        name: 'manage_products',
+        builder: (context, state) => const ManageProductsPage(),
       ),
     ],
   );
