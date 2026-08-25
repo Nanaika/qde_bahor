@@ -94,23 +94,23 @@ Future<void> initDependencies() async {
     ),
   );
 
-  getIt.registerFactory<AuthBloc>(
-    () => AuthBloc(
+  getIt.registerSingleton<AuthBloc>(
+    AuthBloc(
       authRepository: getIt(),
     ),
   );
-  getIt.registerFactory<AddProductBloc>(
-    () => AddProductBloc(
+  getIt.registerSingleton<AddProductBloc>(
+    AddProductBloc(
       repository: getIt(),
     ),
   );
-  getIt.registerFactory<ManageProductsBloc>(
-    () => ManageProductsBloc(
+  getIt.registerSingleton<ManageProductsBloc>(
+    ManageProductsBloc(
       repository: getIt(),
     ),
   );
-  getIt.registerFactory<ProductTypesBloc>(
-    () => ProductTypesBloc(
+  getIt.registerSingleton<ProductTypesBloc>(
+    ProductTypesBloc(
       repository: getIt(),
     ),
   );

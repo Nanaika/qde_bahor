@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:qde_eco_bahor/features/admin/models/product_type.dart';
+import 'package:qde_eco_bahor/features/admin/models/product_type_model.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_variant.dart';
 
 class ProductModel {
   final Timestamp? date;
   final String? id;
-  final ProductType productType;
+  final ProductTypeModel productType;
   final String name;
   final String description;
   final String photoUrl;
@@ -24,7 +24,7 @@ class ProductModel {
   ProductModel copyWith({
     Timestamp? date,
     String? id,
-    ProductType? productType,
+    ProductTypeModel? productType,
     String? name,
     String? description,
     String? photoUrl,
@@ -45,7 +45,7 @@ class ProductModel {
     return ProductModel(
       date: json['date'] as Timestamp?,
       id: json['id'] as String? ?? '',
-      productType: ProductType.values.byName(json['productType'] as String? ?? ProductType.handWashPowder.name),
+      productType: _parseProductType(json['productType']) ?? ProductTypeModel(id: '', name: {}),
       name: json['name'] as String? ?? '',
       description: json['description'] as String? ?? '',
       photoUrl: json['photoUrl'] as String? ?? '',
@@ -67,4 +67,23 @@ class ProductModel {
       'variants': variants.map((v) => v.toJson()).toList(),
     };
   }
+}
+
+ProductTypeModel? _parseProductType(dynamic jsonValue) {
+  if (jsonValue == null) return null;
+
+// Если в Firestore лежит полноценный объект/Map
+  if (jsonValue is Map<String, dynamic>) {
+    return ProductTypeModel.fromJson(jsonValue);
+  }
+
+// Фолбэк: если осталась старая запись, где хранился только String (например, ID или имя)
+  if (jsonValue is String) {
+    return ProductTypeModel(
+      id: jsonValue,
+      name: {'ru': jsonValue},
+    );
+  }
+
+  return null;
 }

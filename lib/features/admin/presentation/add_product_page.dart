@@ -9,7 +9,9 @@ import 'package:qde_eco_bahor/features/admin/add_product/add_product_state.dart'
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 
 import '../add_product/add_product_event.dart';
-import '../models/product_type.dart';
+import '../manage_products/manage_products_state.dart';
+import '../manage_products/product_types_bloc.dart';
+import '../models/product_type_model.dart';
 import '../models/product_variant.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -20,7 +22,7 @@ class AddProductPage extends StatefulWidget {
 }
 
 class _AddProductPageState extends State<AddProductPage> {
-  ProductType? selectedProductType;
+  ProductTypeModel? selectedProductType;
   Uint8List? selectedImageBytes;
   List<ProductVariant> variants = [];
   final TextEditingController nameController = TextEditingController();
@@ -46,15 +48,26 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   void openTypePicker(BuildContext context) async {
-    final result = await SelectProductTypeDialog.show(
-      context,
-      selected: selectedProductType,
-    );
+    final state = context.read<ProductTypesBloc>().state;
 
-    if (result != null) {
-      setState(() {
-        selectedProductType = result;
-      });
+    // Проверяем, что типы успешно загружены в стор
+    if (state is ManageProductsTypeSuccess) {
+      final result = await SelectProductTypeDialog.show(
+        context,
+        types: state.types, // Передаем полученный список из BLoC
+        selected: selectedProductType,
+      );
+
+      if (result != null) {
+        setState(() {
+          selectedProductType = result;
+        });
+      }
+    } else {
+      // Если типы еще не загружены, можно триггернуть загрузку или показать SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Типы еще не загрузились, подождите...')),
+      );
     }
   }
 
@@ -233,47 +246,73 @@ class _AddProductPageState extends State<AddProductPage> {
 }
 
 class SelectProductTypeDialog extends StatelessWidget {
-  final ProductType? initialType;
+  final List<ProductTypeModel> types;
+  final ProductTypeModel? initialType;
 
-  const SelectProductTypeDialog({super.key, this.initialType});
+  const SelectProductTypeDialog({
+    super.key,
+    required this.types,
+    this.initialType,
+  });
 
-  // Вспомогательная функция для вызова диалога из любого места
-  static Future<ProductType?> show(BuildContext context, {ProductType? selected}) {
-    return showDialog<ProductType>(
+  // Вспомогательный метод для вызова диалога
+  static Future<ProductTypeModel?> show(
+    BuildContext context, {
+    required List<ProductTypeModel> types,
+    ProductTypeModel? selected,
+  }) {
+    return showDialog<ProductTypeModel>(
       context: context,
-      builder: (context) => SelectProductTypeDialog(initialType: selected),
+      builder: (context) => SelectProductTypeDialog(
+        types: types,
+        initialType: selected,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Получаем текущий код языка приложения (например, 'ru' или 'uz')
+    final currentLang = Localizations.localeOf(context).languageCode;
+
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text(
-        'Select type',
-      ),
+      title: const Text('Select type'),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: ProductType.values.map((type) {
-          final isSelected = type == initialType;
+      content: SizedBox(
+        width: double.maxFinite,
+        child: types.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'No product types available',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+              )
+            : ListView.builder(
+                shrinkWrap: true,
+                itemCount: types.length,
+                itemBuilder: (context, index) {
+                  final type = types[index];
+                  final isSelected = type.id == initialType?.id;
 
-          return ListTile(
-            title: Text(
-              type.name,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+                  // Берем название на текущем языке или фолбэкнемся на RU/первый доступный
+                  final displayName = type.getName(currentLang);
+
+                  return ListTile(
+                    title: Text(
+                      displayName,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+                      ),
+                    ),
+                    trailing: isSelected ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor) : null,
+                    onTap: () => Navigator.of(context).pop(type), // Возвращаем выбранную модель
+                  );
+                },
               ),
-            ),
-            subtitle: Text(
-              type.name,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            trailing: isSelected ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor) : null,
-            onTap: () => Navigator.of(context).pop(type), // Возвращаем выбранный тип
-          );
-        }).toList(),
       ),
       actions: [
         TextButton(

@@ -13,6 +13,7 @@ class ProductTypesBloc extends Bloc<ManageProductsEvent, ManageProductsState> {
     on<AddProductsTypeEvent>(_onAddType);
     on<DeleteProductsTypeEvent>(_onDeleteType);
     on<EditProductsTypeEvent>(_onUpdateType);
+    add(GetProductsTypesEvent());
   }
 
   Future<void> _onGetTypes(GetProductsTypesEvent event, Emitter<ManageProductsState> emit) async {
