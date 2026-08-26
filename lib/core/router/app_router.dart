@@ -6,6 +6,7 @@ import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
 import '../../features/admin/models/product_model.dart';
 import '../../features/admin/presentation/manage_products_page.dart';
+import '../../features/client/presentation/client_home_page.dart';
 
 class AppRouter {
   static GoRouter get router => _router;
@@ -17,6 +18,11 @@ class AppRouter {
         path: '/',
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/client_home',
+        name: 'client_home',
+        builder: (context, state) => const ClientHomePage(),
       ),
       GoRoute(
         path: '/add_product',

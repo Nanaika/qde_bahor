@@ -114,33 +114,39 @@ class _AddProductTypePageState extends State<AddProductTypePage> {
               itemBuilder: (context, index) {
                 final type = types[index];
                 return Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: ListTile(
-                    title: Row(
-                      children: type.name.entries.map((entry) {
-                        final lang = entry.key.toUpperCase(); // 'RU', 'UZ', 'EN'
-                        final value = entry.value; // 'Напитки'
-
-                        return Chip(
-                          label: Text('$lang: $value'),
-                        );
-                      }).toList(),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            _showTypeBottomSheet(context, typeToEdit: type);
-                            // TODO: Редактировать товар
-                          },
+                        // 1. Названия (переносятся на новую строку при нехватке места)
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: type.name.entries.map((entry) {
+                            return Chip(
+                              visualDensity: VisualDensity.compact,
+                              label: Text('${entry.key.toUpperCase()}: ${entry.value}'),
+                            );
+                          }).toList(),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            _showDeleteDialog(context, type.id);
-                          },
+
+                        const SizedBox(height: 8),
+
+                        // 2. Иконки действий отдельной строкой снизу справа
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _showTypeBottomSheet(context, typeToEdit: type),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _showDeleteDialog(context, type.id),
+                            ),
+                          ],
                         ),
                       ],
                     ),

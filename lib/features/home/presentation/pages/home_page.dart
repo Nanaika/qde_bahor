@@ -79,6 +79,11 @@ class _HomePageState extends State<HomePage> {
                       context.push('/admin_home');
                     },
                     child: Text('Admin')),
+                ElevatedButton(
+                    onPressed: () {
+                      context.push('/client_home');
+                    },
+                    child: Text('Client')),
               ],
             ),
           );
