@@ -10,3 +10,16 @@ class AddEvent extends AddProductEvent {
 
   AddEvent(this.item, this.imageBytes);
 }
+
+class EditEvent extends AddProductEvent {
+  final ProductModel item;
+  final Uint8List? imageBytes;
+
+  EditEvent(this.item, this.imageBytes);
+}
+
+class DeleteEvent extends AddProductEvent {
+  final String id;
+
+  DeleteEvent(this.id);
+}

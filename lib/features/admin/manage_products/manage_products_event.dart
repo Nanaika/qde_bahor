@@ -6,6 +6,8 @@ class GetProductsEvent extends ManageProductsEvent {}
 
 class GetProductsTypesEvent extends ManageProductsEvent {}
 
+class SetLoadingEvent extends ManageProductsEvent {}
+
 class AddProductsTypeEvent extends ManageProductsEvent {
   final ProductTypeModel model;
 

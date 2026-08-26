@@ -4,6 +4,7 @@ import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
 import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
+import '../../features/admin/models/product_model.dart';
 import '../../features/admin/presentation/manage_products_page.dart';
 
 class AppRouter {
@@ -19,8 +20,12 @@ class AppRouter {
       ),
       GoRoute(
         path: '/add_product',
-        name: 'add_product',
-        builder: (context, state) => const AddProductPage(),
+        builder: (context, state) {
+          // Извлекаем объект из extra (будет null при создании)
+          final product = state.extra as ProductModel?;
+
+          return AddProductPage(product: product);
+        },
       ),
       GoRoute(
         path: '/add_product_type',

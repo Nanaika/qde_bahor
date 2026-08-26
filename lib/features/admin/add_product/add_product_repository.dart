@@ -7,4 +7,11 @@ abstract class AddProductRepository {
     ProductModel item,
     Uint8List imageBytes,
   );
+
+  Future update(
+    ProductModel item,
+    Uint8List? imageBytes,
+  );
+
+  Future delete(String id);
 }

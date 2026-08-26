@@ -10,6 +10,9 @@ class ManageProductsBloc extends Bloc<ManageProductsEvent, ManageProductsState> 
 
   ManageProductsBloc({required this.repository}) : super(ManageProductsInitial()) {
     on<GetProductsEvent>(_onGetProducts);
+    on<SetLoadingEvent>((event, emit) {
+      emit(ManageProductsLoading());
+    });
   }
 
   Future<void> _onGetProducts(ManageProductsEvent event, Emitter<ManageProductsState> emit) async {

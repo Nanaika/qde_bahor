@@ -19,4 +19,14 @@ class AddProductRepositoryImpl implements AddProductRepository {
   ) async {
     await remoteDataSource.add(item, imageBytes);
   }
+
+  @override
+  Future<dynamic> update(ProductModel item, Uint8List? imageBytes) async {
+    await remoteDataSource.update(item, imageBytes);
+  }
+
+  @override
+  Future<dynamic> delete(String id) async {
+    await remoteDataSource.delete(id);
+  }
 }

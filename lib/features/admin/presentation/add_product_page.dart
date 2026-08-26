@@ -15,7 +15,9 @@ import '../models/product_type_model.dart';
 import '../models/product_variant.dart';
 
 class AddProductPage extends StatefulWidget {
-  const AddProductPage({super.key});
+  const AddProductPage({super.key, this.product});
+
+  final ProductModel? product;
 
   @override
   State<AddProductPage> createState() => _AddProductPageState();
@@ -27,6 +29,27 @@ class _AddProductPageState extends State<AddProductPage> {
   List<ProductVariant> variants = [];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
+
+  bool get isEditing => widget.product != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.product;
+
+    // Заполняем контроллеры и состояние данными редактируемого товара
+    nameController.text = p?.name ?? '';
+    descController.text = p?.description ?? '';
+    selectedProductType = p?.productType;
+    variants = p?.variants != null ? List.from(p!.variants) : [];
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -152,6 +175,26 @@ class _AddProductPageState extends State<AddProductPage> {
                             ),
                           ],
                         )
+                      else if (isEditing && (widget.product?.photoUrl.isNotEmpty ?? false))
+                        Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                widget.product!.photoUrl,
+                                height: 180,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: _pickImage,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Change photo'),
+                            ),
+                          ],
+                        )
                       else
                         ElevatedButton.icon(
                           onPressed: _pickImage,
@@ -221,15 +264,34 @@ class _AddProductPageState extends State<AddProductPage> {
                       SizedBox(height: ThemeDimensions.paddingL),
                       ElevatedButton(
                         onPressed: () async {
-                          final model = ProductModel(
+                          if (isEditing) {
+                            // 1. При редактировании обновляем существующий товар
+                            final updatedModel = ProductModel(
+                              id: widget.product!.id,
+                              date: widget.product!.date,
                               productType: selectedProductType!,
-                              name: nameController.text,
-                              description: descController.text,
+                              name: nameController.text.trim(),
+                              description: descController.text.trim(),
+                              photoUrl: widget.product!.photoUrl,
+                              // Оставляем текущую ссылку, если новую картинку не выбирали
+                              variants: variants,
+                            );
+
+                            // Отправляем EditEvent (selectedImageBytes может быть null, если фото не меняли)
+                            context.read<AddProductBloc>().add(EditEvent(updatedModel, selectedImageBytes));
+                          } else {
+                            // 2. При создании добавляем новый товар
+                            if (selectedImageBytes == null) return;
+
+                            final newModel = ProductModel(
+                              productType: selectedProductType!,
+                              name: nameController.text.trim(),
+                              description: descController.text.trim(),
                               photoUrl: '',
-                              variants: variants);
-                          print('================${model.productType.name}');
-                          if (selectedImageBytes != null) {
-                            context.read<AddProductBloc>().add(AddEvent(model, selectedImageBytes!));
+                              variants: variants,
+                            );
+
+                            context.read<AddProductBloc>().add(AddEvent(newModel, selectedImageBytes!));
                           }
                         },
                         child: const Text('Save'),
@@ -372,143 +434,145 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      // Отступ под клавиатуру
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        top: 16,
-        left: 16,
-        right: 16,
-      ),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                widget.variant == null ? 'Add variant' : 'Edit variant',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Название варианта
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name (example: Box 10 kg)',
-                  border: OutlineInputBorder(),
+    return RepaintBoundary(
+      child: Padding(
+        // Отступ под клавиатуру
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          top: 16,
+          left: 16,
+          right: 16,
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  widget.variant == null ? 'Add variant' : 'Edit variant',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-              // Цена и Единица измерения
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Price',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => v == null || v.isEmpty ? 'Enter price' : null,
-                    ),
+                // Название варианта
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name (example: Box 10 kg)',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<UnitType>(
-                      initialValue: _selectedUnit,
-                      decoration: const InputDecoration(
-                        labelText: 'Unit',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: UnitType.values.map((unit) {
-                        return DropdownMenuItem(
-                          value: unit,
-                          child: Text(unit.name.toUpperCase()),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedUnit = val);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Вес Нетто и Вес Брутто
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _netWeightController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Netto (кг)',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _grossWeightController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Brutto (кг)',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Значение объема/количества и Шт в упаковке
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _valueController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Объем / Кол-во',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => v == null || v.isEmpty ? 'Укажите объем' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _itemsInPackageController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Штук в уп. (опц.)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Кнопка Сохранить
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
                 ),
-                onPressed: _submit,
-                child: const Text('Save'),
-              ),
-            ],
+                const SizedBox(height: 12),
+
+                // Цена и Единица измерения
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _priceController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Price',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter price' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<UnitType>(
+                        initialValue: _selectedUnit,
+                        decoration: const InputDecoration(
+                          labelText: 'Unit',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: UnitType.values.map((unit) {
+                          return DropdownMenuItem(
+                            value: unit,
+                            child: Text(unit.name.toUpperCase()),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedUnit = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Вес Нетто и Вес Брутто
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _netWeightController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Netto (кг)',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _grossWeightController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Brutto (кг)',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Значение объема/количества и Шт в упаковке
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _valueController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Объем / Кол-во',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) => v == null || v.isEmpty ? 'Укажите объем' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _itemsInPackageController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Штук в уп. (опц.)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Кнопка Сохранить
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: _submit,
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

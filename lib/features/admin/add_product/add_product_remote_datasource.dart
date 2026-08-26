@@ -1,12 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:js_interop';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
-
-import 'dart:convert';
 import 'package:web/web.dart' as web;
 
 import '../../../core/utils/app_constants.dart';
@@ -16,10 +15,20 @@ abstract class AddProductRemoteDataSource {
     ProductModel item,
     Uint8List imageBytes,
   );
+
+  Future update(
+    ProductModel item,
+    Uint8List? imageBytes,
+  );
+
+  Future delete(
+    String id,
+  );
 }
 
 class AddProductRemoteDataSourceImpl implements AddProductRemoteDataSource {
   final db = FirebaseFirestore.instance;
+  final storage = FirebaseStorage.instance;
 
   @override
   Future<void> add(
@@ -28,10 +37,6 @@ class AddProductRemoteDataSourceImpl implements AddProductRemoteDataSource {
   ) async {
     final docRef = db.collection(AppConstants.products).doc();
 
-    // final compressedBytes = await compute(
-    //   _compressInIsolate,
-    //   _CompressParams(imageBytes, 1024, 75),
-    // );
     final compressedBytes = await compressImageWeb(imageBytes);
 
     final String? imageUrl = await _uploadProductImage(
@@ -49,6 +54,55 @@ class AddProductRemoteDataSourceImpl implements AddProductRemoteDataSource {
       ...updatedItem.toJson(),
       'date': FieldValue.serverTimestamp(), // Точное время сервера Firestore
     });
+  }
+
+  @override
+  Future<void> update(ProductModel item, Uint8List? imageBytes) async {
+    if (item.id == null || item.id!.isEmpty) {
+      throw Exception('ID can not be empty');
+    }
+
+    final docRef = db.collection(AppConstants.products).doc(item.id);
+    String finalImageUrl = item.photoUrl;
+
+    // 1. Загружаем новую картинку ТОЛЬКО если переданы байты
+    if (imageBytes != null && imageBytes.isNotEmpty) {
+      final compressedBytes = await compressImageWeb(imageBytes);
+
+      final String? uploadedUrl = await _uploadProductImage(
+        docId: docRef.id,
+        imageBytes: compressedBytes,
+      );
+
+      if (uploadedUrl == null) {
+        throw Exception('Cant upload image');
+      }
+
+      finalImageUrl = uploadedUrl;
+    }
+
+    // 2. Обновляем модель с актуальным photoUrl
+    final updatedItem = item.copyWith(photoUrl: finalImageUrl);
+
+    // 3. Обновляем документ в Firestore
+    final Map<String, dynamic> dataToUpdate = updatedItem.toJson();
+
+    // Удаляем date из обновления, чтобы не затереть оригинальную дату создания
+    dataToUpdate.remove('date');
+
+    // Выполняем точечное обновление полей
+    await docRef.update(dataToUpdate);
+  }
+
+  @override
+  Future<dynamic> delete(String id) async {
+    final storageRef = storage.ref().child(AppConstants.productsImages).child('$id.jpg');
+    final ref = db.collection(AppConstants.products).doc(id);
+    try {
+      await storageRef.delete();
+    } catch (e) {}
+
+    await ref.delete();
   }
 }
 
@@ -74,14 +128,6 @@ Future<String?> _uploadProductImage({
     print('Ошибка загрузки изображения в Storage: $e');
     return null;
   }
-}
-
-class _CompressParams {
-  final Uint8List bytes;
-  final int maxWidth;
-  final int quality;
-
-  _CompressParams(this.bytes, this.maxWidth, this.quality);
 }
 
 Future<Uint8List> compressImageWeb(
