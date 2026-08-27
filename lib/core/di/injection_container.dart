@@ -23,6 +23,7 @@ import '../../features/admin/manage_products/manage_products_repository.dart';
 import '../../features/admin/manage_products/manage_products_repository_impl.dart';
 import '../../features/admin/manage_products/product_types_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/cart/cart_bloc.dart';
 import '../../firebase_options.dart';
 
 final getIt = GetIt.instance;
@@ -113,5 +114,8 @@ Future<void> initDependencies() async {
     ProductTypesBloc(
       repository: getIt(),
     ),
+  );
+  getIt.registerSingleton<CartCubit>(
+    CartCubit(),
   );
 }

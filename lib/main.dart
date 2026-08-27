@@ -13,6 +13,7 @@ import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
 
 import 'core/services/telegram_service.dart';
 import 'features/admin/manage_products/product_types_bloc.dart';
+import 'features/cart/cart_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,9 @@ void main() async {
           ),
           BlocProvider<ProductTypesBloc>(
             create: (context) => getIt<ProductTypesBloc>(),
+          ),
+          BlocProvider<CartCubit>(
+            create: (context) => getIt<CartCubit>(),
           ),
         ],
         child: const MyApp(),

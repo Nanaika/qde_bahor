@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
+import 'package:qde_eco_bahor/features/cart/presentation/cart_screen.dart';
 import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
 import '../../features/admin/models/product_model.dart';
@@ -23,6 +24,11 @@ class AppRouter {
         path: '/client_home',
         name: 'client_home',
         builder: (context, state) => const ClientHomePage(),
+      ),
+      GoRoute(
+        path: '/cart',
+        name: 'cart',
+        builder: (context, state) => const CartScreen(),
       ),
       GoRoute(
         path: '/add_product',

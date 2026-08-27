@@ -1,6 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
+import 'package:qde_eco_bahor/features/admin/manage_products/product_types_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
+import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../admin/manage_products/manage_products_state.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -57,6 +63,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await authRepository.getCurrentUser();
       if (user != null) {
+        final typesBloc = GetIt.I<ProductTypesBloc>();
+        typesBloc.add(GetProductsTypesEvent());
+        final cartBloc = GetIt.I<CartCubit>();
+        await cartBloc.loadCart(user.id);
+        // 3. ЖДЕМ, пока ProductTypesBloc вернет Success или Error
+        await typesBloc.stream.firstWhere(
+          (state) => state is ManageProductsTypeSuccess || state is ManageProductsError,
+        );
+
         emit(AuthAuthenticatedState(user));
       } else {
         emit(const AuthUnauthenticatedState());

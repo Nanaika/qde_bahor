@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qde_eco_bahor/core/di/injection_container.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/product_types_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
+import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 
-import '../../../core/theme/theme_colors.dart';
 import '../../admin/manage_products/manage_products_bloc.dart';
 import '../../admin/manage_products/manage_products_state.dart';
 import '../../admin/models/product_type_model.dart';
@@ -29,8 +31,8 @@ class _ClientHomePageState extends State<ClientHomePage> with SingleTickerProvid
     super.initState();
     context.read<ManageProductsBloc>().add(GetProductsEvent());
     // 1. Достаем стейт из заранее заиниченного блока
-    final state = context.read<ProductTypesBloc>().state;
-
+    final state = getIt<ProductTypesBloc>().state;
+    if (state is ManageProductsError) {}
     // 2. Достаем типы из стейта (подставь имя своего Success-стейта и поля)
     if (state is ManageProductsTypeSuccess) {
       _types = state.types;
@@ -72,7 +74,14 @@ class _ClientHomePageState extends State<ClientHomePage> with SingleTickerProvid
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Каталог товаров'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                context.push('/cart');
+              },
+              icon: Icon(Icons.shopping_cart))
+        ],
+        title: const Flexible(child: Text('Каталог товаров')),
         elevation: 0,
       ),
       body: Column(
@@ -477,19 +486,34 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7000FF), // Uzum purple
+                        backgroundColor: const Color(0xFF7000FF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       onPressed: totalCount > 0
                           ? () {
-                              // Возвращаем или отправляем в BLoC мапу вариантов _selectedQuantities
-                              Navigator.pop(context, _selectedQuantities);
+                              final cartCubit = context.read<CartCubit>();
+
+                              // Проходим по всем выбранным вариантам
+                              _selectedQuantities.forEach((variantId, qty) {
+                                if (qty > 0) {
+                                  // Находим модель варианта по его id
+                                  final variant = product.variants.firstWhere(
+                                    (v) => v.id == variantId,
+                                  );
+
+                                  // Добавляем вариант с его количеством в корзину
+                                  cartCubit.addProduct(product, variant, qty);
+                                }
+                              });
+
+                              // Закрываем BottomSheet
+                              Navigator.pop(context);
                             }
                           : null,
                       child: const Text(
-                        'Добавить',
+                        'Add',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,
