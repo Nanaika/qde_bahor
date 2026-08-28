@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../cart/cart_item.dart';
 import '../manage_order_state.dart';
 import '../manage_orders_bloc.dart';
 import '../manage_orders_event.dart';
@@ -35,13 +34,10 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
           }
 
           if (state is ManageOrdersError) {
-            print('ORDERS error=====================  ${state.message}');
             return Center(child: Text(state.message));
           }
 
           if (state is ManageOrdersSuccess) {
-            print('ORDERS =====================  ${state.orders}');
-
             if (state.orders.isEmpty) {
               return const Center(child: Text('Заказов нет'));
             }
@@ -71,6 +67,25 @@ class _OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormatted = order.createdAt != null ? DateFormat('dd.MM.yyyy HH:mm').format(order.createdAt!) : '';
+    final double totalNetto = order.items.fold(
+      0,
+      (sum, item) => sum + ((item.variant.netWeight ?? 0) * item.quantity),
+    );
+
+    final double totalBrutto = order.items.fold(
+      0,
+      (sum, item) => sum + ((item.variant.grossWeight ?? 0) * item.quantity),
+    );
+
+    // 2. Цены: Обычная (без скидки) и итоговая (со скидкой)
+    final double totalOriginalPrice = order.items.fold(
+      0.0,
+      (sum, item) => sum + (item.variant.price * item.quantity),
+    );
+    final double totalDiscountedPrice = order.items.fold(
+      0.0,
+      (sum, item) => sum + (item.variant.price * item.quantity),
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -79,18 +94,9 @@ class _OrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Заказ #${order.id}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  '${order.totalPrice} сум',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+            Text(
+              'Заказ #${order.id}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             if (dateFormatted.isNotEmpty) ...[
               const SizedBox(height: 4),
@@ -100,8 +106,31 @@ class _OrderCard extends StatelessWidget {
               ),
             ],
             const Divider(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'User',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${order.owner.name}',
+                  style: const TextStyle(fontWeight: FontWeight.w400),
+                ),
+                Text(
+                  '${order.owner.company}',
+                  style: const TextStyle(fontWeight: FontWeight.w400),
+                ),
+                Text(
+                  '${order.owner.number}',
+                  style: const TextStyle(fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
 
             // Проход по элементам заказа CartItem
+
+            const Divider(height: 16),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -109,23 +138,128 @@ class _OrderCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = order.items[index];
 
+                // Вес НЕТТО и БРУТТО для конкретного товара
+                final double itemNetto = (item.variant.netWeight ?? 0) * item.quantity;
+                final double itemBrutto = (item.variant.grossWeight ?? 0) * item.quantity;
+
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          '${item.product.name} (${item.variant.name})',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${item.product.name} (${item.variant.name})',
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Нетто: $itemNetto кг  •  Брутто: $itemBrutto кг',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('${item.quantity} шт.'),
+                                const SizedBox(width: 12),
+                                Text(
+                                  '${item.totalPrice} сум',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      Text('${item.quantity} шт.'),
-                      const SizedBox(width: 12),
-                      Text('${item.totalPrice} сум'),
                     ],
                   ),
                 );
               },
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: const Text(
+                          'Общий вес заказа:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Нетто: ${totalNetto.toStringAsFixed(2)} кг / Брутто: ${totalBrutto.toStringAsFixed(2)} кг',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Итого к оплате:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${totalOriginalPrice} сум',
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Theme.of(context).colorScheme.outline,
+                                decoration: TextDecoration.lineThrough),
+                          ),
+                          Text(
+                            '${totalDiscountedPrice} сум',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF7000FF),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 16),
           ],
         ),
       ),

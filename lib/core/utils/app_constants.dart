@@ -17,6 +17,7 @@ class AppConstants {
   static const String moderateUsers = 'moderateUsers';
   static const String products = 'products';
   static const String productsTypes = 'productsTypes';
+  static const String orders = 'orders';
 
   //storage names
   static const String productsImages = 'products_images';

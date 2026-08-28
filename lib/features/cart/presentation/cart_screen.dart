@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/order_model.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../cart_bloc.dart';
 
@@ -18,8 +21,23 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<CartCubit, CartState>(
+      body: BlocConsumer<CartCubit, CartState>(
+        listener: (context, state) {
+          if (state.status == CartStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Заказ успешно оформлен!')),
+            );
+          } else if (state.status == CartStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Ошибка: ${state.errorMessage}')),
+            );
+          }
+        },
         builder: (context, state) {
+          if (state.status == CartStatus.loading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (state.items.isEmpty) {
             return const Center(
               child: Text('Корзина пуста'),
@@ -168,7 +186,11 @@ class CartScreen extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            // Логика перехода к оформлению заказа
+                            final authState = context.read<AuthBloc>().state as AuthAuthenticatedState;
+                            final user = authState.user;
+                            final order =
+                                OrderModel(id: '', items: state.items, totalPrice: state.totalAmount, owner: user);
+                            context.read<CartCubit>().addOrder(order);
                           },
                           child: const Text(
                             'Оформить заказ',

@@ -26,7 +26,7 @@ class ManageOrdersBloc extends Bloc<ManageOrdersEvent, ManageOrdersState> {
 
     await _subscription?.cancel();
 
-    _subscription = _firestore.collection('orders').snapshots().listen(
+    _subscription = _firestore.collection('orders').orderBy('createdAt', descending: true).snapshots().listen(
       (snapshot) {
         try {
           final List<OrderModel> orders = snapshot.docs.map((doc) {
