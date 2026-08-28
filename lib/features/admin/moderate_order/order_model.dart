@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
 
 import '../../auth/data/models/user_model.dart';
 import '../../cart/cart_item.dart';
@@ -9,6 +10,10 @@ class OrderModel {
   final UserModel owner;
   final num totalPrice;
   final DateTime? createdAt;
+  final OrderStatus warehouseStatus;
+  final OrderStatus accountingStatus;
+  final String warehouseDeclinedMessage;
+  final String accountingDeclinedMessage;
 
   OrderModel({
     required this.id,
@@ -16,6 +21,10 @@ class OrderModel {
     required this.owner,
     required this.totalPrice,
     this.createdAt,
+    this.warehouseStatus = OrderStatus.waiting,
+    this.accountingStatus = OrderStatus.waiting,
+    this.warehouseDeclinedMessage = '',
+    this.accountingDeclinedMessage = '',
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +38,16 @@ class OrderModel {
       ),
       totalPrice: json['totalPrice'] as num? ?? 0,
       createdAt: json['createdAt'] is Timestamp ? (json['createdAt'] as Timestamp).toDate() : null,
+      warehouseStatus: OrderStatus.values.firstWhere(
+        (e) => e.name == json['warehouseStatus'],
+        orElse: () => OrderStatus.waiting,
+      ),
+      accountingStatus: OrderStatus.values.firstWhere(
+        (e) => e.name == json['accountingStatus'],
+        orElse: () => OrderStatus.waiting,
+      ),
+      warehouseDeclinedMessage: json['warehouseDeclinedMessage'] as String? ?? '',
+      accountingDeclinedMessage: json['accountingDeclinedMessage'] as String? ?? '',
     );
   }
 
@@ -38,6 +57,10 @@ class OrderModel {
         'owner': owner.toJson(),
         'totalPrice': totalPrice,
         'createdAt': FieldValue.serverTimestamp(),
+        'warehouseStatus': warehouseStatus.name,
+        'accountingStatus': accountingStatus.name,
+        'warehouseDeclinedMessage': warehouseDeclinedMessage,
+        'accountingDeclinedMessage': accountingDeclinedMessage,
       };
 
   OrderModel copyWith({
@@ -46,6 +69,10 @@ class OrderModel {
     UserModel? owner,
     num? totalPrice,
     DateTime? createdAt,
+    OrderStatus? warehouseStatus,
+    OrderStatus? accountingStatus,
+    String? warehouseDeclinedMessage,
+    String? accountingDeclinedMessage,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -53,6 +80,10 @@ class OrderModel {
       owner: owner ?? this.owner,
       totalPrice: totalPrice ?? this.totalPrice,
       createdAt: createdAt ?? this.createdAt,
+      warehouseStatus: warehouseStatus ?? this.warehouseStatus,
+      accountingStatus: accountingStatus ?? this.accountingStatus,
+      warehouseDeclinedMessage: warehouseDeclinedMessage ?? this.warehouseDeclinedMessage,
+      accountingDeclinedMessage: accountingDeclinedMessage ?? this.accountingDeclinedMessage,
     );
   }
 }

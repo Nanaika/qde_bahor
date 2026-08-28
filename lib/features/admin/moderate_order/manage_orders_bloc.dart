@@ -1,6 +1,9 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/core/utils/app_constants.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/status_type.dart';
 
 import 'manage_order_state.dart';
 import 'manage_orders_event.dart';
@@ -16,6 +19,7 @@ class ManageOrdersBloc extends Bloc<ManageOrdersEvent, ManageOrdersState> {
     on<SubscribeToManageOrdersEvent>(_onSubscribe);
     on<ManageOrdersUpdatedEvent>(_onUpdated);
     on<ManageOrdersErrorEvent>(_onError);
+    on<UpdateStatusEvent>(_onUpdateStatus);
   }
 
   Future<void> _onSubscribe(
@@ -26,7 +30,8 @@ class ManageOrdersBloc extends Bloc<ManageOrdersEvent, ManageOrdersState> {
 
     await _subscription?.cancel();
 
-    _subscription = _firestore.collection('orders').orderBy('createdAt', descending: true).snapshots().listen(
+    _subscription =
+        _firestore.collection(AppConstants.orders).orderBy('createdAt', descending: true).snapshots().listen(
       (snapshot) {
         try {
           final List<OrderModel> orders = snapshot.docs.map((doc) {
@@ -51,6 +56,26 @@ class ManageOrdersBloc extends Bloc<ManageOrdersEvent, ManageOrdersState> {
     Emitter<ManageOrdersState> emit,
   ) {
     emit(ManageOrdersSuccess(event.orders));
+  }
+
+  Future<void> _onUpdateStatus(
+    UpdateStatusEvent event,
+    Emitter<ManageOrdersState> emit,
+  ) async {
+    try {
+      final ref = _firestore.collection(AppConstants.orders).doc(event.docId);
+
+      switch (event.statusType) {
+        case StatusType.storage:
+          await ref.update({'warehouseStatus': event.status.name, 'warehouseDeclinedMessage': event.reason});
+          break;
+        case StatusType.accounting:
+          await ref.update({'accountingStatus': event.status.name, 'accountingDeclinedMessage': event.reason});
+          break;
+      }
+    } catch (e) {
+      emit(ManageOrdersError('Error: $e'));
+    }
   }
 
   void _onError(

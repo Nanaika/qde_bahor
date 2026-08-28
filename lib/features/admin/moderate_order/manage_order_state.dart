@@ -12,6 +12,8 @@ class ManageOrdersInitial extends ManageOrdersState {}
 
 class ManageOrdersLoading extends ManageOrdersState {}
 
+class ManageOrdersStatusLoading extends ManageOrdersState {}
+
 class ManageOrdersSuccess extends ManageOrdersState {
   final List<OrderModel> orders;
 

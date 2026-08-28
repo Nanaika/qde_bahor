@@ -1,0 +1,1 @@
+enum StatusType { storage, accounting }
