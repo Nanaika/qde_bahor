@@ -31,6 +31,11 @@ class HomePageAdmin extends StatelessWidget {
                 context.push('/manage_products');
               },
               child: Text('Manage products')),
+          ElevatedButton(
+              onPressed: () {
+                context.push('/manage_orders');
+              },
+              child: Text('Manage orders')),
         ],
       ),
     );

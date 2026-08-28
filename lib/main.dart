@@ -8,6 +8,7 @@ import 'package:qde_eco_bahor/core/router/app_router.dart';
 import 'package:qde_eco_bahor/core/services/theme_service.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/manage_orders_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
 
@@ -55,6 +56,9 @@ void main() async {
           ),
           BlocProvider<CartCubit>(
             create: (context) => getIt<CartCubit>(),
+          ),
+          BlocProvider<ManageOrdersBloc>(
+            create: (context) => getIt<ManageOrdersBloc>(),
           ),
         ],
         child: const MyApp(),

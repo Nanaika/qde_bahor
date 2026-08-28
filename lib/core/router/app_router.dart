@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
@@ -29,6 +30,11 @@ class AppRouter {
         path: '/cart',
         name: 'cart',
         builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: '/manage_orders',
+        name: 'manage_orders',
+        builder: (context, state) => const ManageOrdersPage(),
       ),
       GoRoute(
         path: '/add_product',

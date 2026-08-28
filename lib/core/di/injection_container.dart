@@ -12,6 +12,7 @@ import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_repository.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/moderate_order/manage_orders_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
@@ -117,5 +118,8 @@ Future<void> initDependencies() async {
   );
   getIt.registerSingleton<CartCubit>(
     CartCubit(),
+  );
+  getIt.registerSingleton<ManageOrdersBloc>(
+    ManageOrdersBloc(),
   );
 }

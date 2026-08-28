@@ -81,7 +81,7 @@ class _ClientHomePageState extends State<ClientHomePage> with SingleTickerProvid
               },
               icon: Icon(Icons.shopping_cart))
         ],
-        title: const Flexible(child: Text('Каталог товаров')),
+        title: Text('Каталог товаров'),
         elevation: 0,
       ),
       body: Column(
