@@ -13,7 +13,7 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Корзина'),
+        title: const Text('Cart'),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -25,11 +25,11 @@ class CartScreen extends StatelessWidget {
         listener: (context, state) {
           if (state.status == CartStatus.success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Заказ успешно оформлен!')),
+              const SnackBar(content: Text('Your order has been placed!')),
             );
           } else if (state.status == CartStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Ошибка: ${state.errorMessage}')),
+              SnackBar(content: Text('Error: ${state.errorMessage}')),
             );
           }
         },
@@ -40,7 +40,7 @@ class CartScreen extends StatelessWidget {
 
           if (state.items.isEmpty) {
             return const Center(
-              child: Text('Корзина пуста'),
+              child: Text('Cart is empty'),
             );
           }
 
@@ -91,7 +91,7 @@ class CartScreen extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
-                                    'Вариант: ${item.variant.name}',
+                                    'Variant: ${item.variant.name}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Theme.of(context).colorScheme.outline,
@@ -159,14 +159,14 @@ class CartScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Итого (${state.totalCount} шт):',
+                          'Total (${state.totalCount} pc):',
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
                         Text(
-                          '${state.totalAmount.toInt()} сум',
+                          '${state.totalAmount.toInt()} sum',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -193,7 +193,7 @@ class CartScreen extends StatelessWidget {
                             context.read<CartCubit>().addOrder(order);
                           },
                           child: const Text(
-                            'Оформить заказ',
+                            'Checkout',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

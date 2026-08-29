@@ -16,6 +16,7 @@ import 'package:qde_eco_bahor/features/admin/moderate_order/manage_orders_bloc.d
 import 'package:qde_eco_bahor/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:qde_eco_bahor/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
+import 'package:qde_eco_bahor/features/client/confirm_account/profile_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/admin/add_product/add_product_repository_impl.dart';
@@ -121,5 +122,8 @@ Future<void> initDependencies() async {
   );
   getIt.registerSingleton<ManageOrdersBloc>(
     ManageOrdersBloc(),
+  );
+  getIt.registerSingleton<ProfileBloc>(
+    ProfileBloc(),
   );
 }

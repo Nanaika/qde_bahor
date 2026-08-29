@@ -195,7 +195,7 @@ class _OrderCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Общий вес заказа:',
+                          'Total weight:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -210,7 +210,7 @@ class _OrderCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           textAlign: TextAlign.end,
-                          'Нетто: ${totalNetto.toStringAsFixed(2)} кг / Брутто: ${totalBrutto.toStringAsFixed(2)} кг',
+                          'Netto: ${totalNetto.toStringAsFixed(2)} kg / Brutto: ${totalBrutto.toStringAsFixed(2)} kg',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,
@@ -230,7 +230,7 @@ class _OrderCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Итого к оплате:',
+                    'Total:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
@@ -243,14 +243,14 @@ class _OrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${totalOriginalPrice} сум',
+                            '${totalOriginalPrice} sum',
                             style: TextStyle(
                                 fontSize: 13,
                                 color: Theme.of(context).colorScheme.outline,
                                 decoration: TextDecoration.lineThrough),
                           ),
                           Text(
-                            '${totalDiscountedPrice} сум',
+                            '${totalDiscountedPrice} sum',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

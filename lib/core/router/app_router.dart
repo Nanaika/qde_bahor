@@ -24,7 +24,7 @@ class AppRouter {
       GoRoute(
         path: '/client_home',
         name: 'client_home',
-        builder: (context, state) => const ClientHomePage(),
+        builder: (context, state) => const MainNavigationScreen(),
       ),
       GoRoute(
         path: '/cart',

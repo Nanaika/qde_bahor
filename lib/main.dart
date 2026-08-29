@@ -10,6 +10,7 @@ import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/manage_orders_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:qde_eco_bahor/features/client/confirm_account/profile_bloc.dart';
 import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
 
 import 'core/services/telegram_service.dart';
@@ -59,6 +60,9 @@ void main() async {
           ),
           BlocProvider<ManageOrdersBloc>(
             create: (context) => getIt<ManageOrdersBloc>(),
+          ),
+          BlocProvider<ProfileBloc>(
+            create: (context) => getIt<ProfileBloc>(),
           ),
         ],
         child: const MyApp(),

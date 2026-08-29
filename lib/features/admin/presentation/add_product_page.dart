@@ -110,9 +110,35 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
+  InputDecoration _customInputDecoration(String labelText) {
+    return InputDecoration(
+      labelText: labelText,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        title: Text(isEditing ? 'Edit Product' : 'Add Product'),
+        elevation: 0,
+      ),
       body: BlocConsumer<AddProductBloc, AddProductState>(
         listener: (context, state) {
           if (state is AddProductError) {
@@ -131,176 +157,271 @@ class _AddProductPageState extends State<AddProductPage> {
             );
           }
 
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text('Name'),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      TextField(
-                        controller: nameController,
-                      ),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      Text('Description'),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      TextField(
-                        controller: descController,
-                      ),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      Text('Photo'),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      if (selectedImageBytes != null)
-                        Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.memory(
-                                selectedImageBytes!,
-                                height: 180,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  selectedImageBytes = null;
-                                });
-                              },
-                            ),
-                          ],
-                        )
-                      else if (isEditing && (widget.product?.photoUrl.isNotEmpty ?? false))
-                        Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                widget.product!.photoUrl,
-                                height: 180,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: _pickImage,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Change photo'),
-                            ),
-                          ],
-                        )
-                      else
-                        ElevatedButton.icon(
-                          onPressed: _pickImage,
-                          icon: const Icon(Icons.photo_library),
-                          label: const Text('pick photo'),
-                        ),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      Text('ProductType'),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      ElevatedButton(
-                          onPressed: () {
-                            openTypePicker(context);
-                          },
-                          child: Text('Select type')),
-                      Text(
-                          'Selected type : ${selectedProductType != null ? selectedProductType?.name : 'not selected'}'),
-                      SizedBox(height: ThemeDimensions.paddingM),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Variants', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          TextButton.icon(
-                            onPressed: () => _addOrEditVariant(),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add'),
+                          const Text(
+                            'Name',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: nameController,
+                            decoration: _customInputDecoration('Enter product name'),
+                          ),
+                          SizedBox(height: ThemeDimensions.paddingM),
+                          const Text(
+                            'Description',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: descController,
+                            maxLines: 3,
+                            decoration: _customInputDecoration('Enter description'),
                           ),
                         ],
                       ),
-                      if (variants.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text('No variants', style: TextStyle(color: Colors.grey)),
-                        ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: variants.length,
-                        itemBuilder: (context, index) {
-                          final item = variants[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text(
-                                'Price: ${item.price} | Netto: ${item.netWeight} кг | Brutto: ${item.grossWeight} кг',
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () => _addOrEditVariant(item, index),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Photo',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 12),
+                          if (selectedImageBytes != null)
+                            Stack(
+                              alignment: Alignment.topRight,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.memory(
+                                    selectedImageBytes!,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.cancel, color: Colors.red),
                                     onPressed: () {
-                                      setState(() => variants.removeAt(index));
+                                      setState(() {
+                                        selectedImageBytes = null;
+                                      });
                                     },
                                   ),
-                                ],
+                                ),
+                              ],
+                            )
+                          else if (isEditing && (widget.product?.photoUrl.isNotEmpty ?? false))
+                            Stack(
+                              alignment: Alignment.topRight,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    widget.product!.photoUrl,
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton.icon(
+                                    onPressed: _pickImage,
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('Change photo'),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
+                              onPressed: _pickImage,
+                              icon: const Icon(Icons.photo_library),
+                              label: const Text('Pick photo'),
                             ),
-                          );
-                        },
+                        ],
                       ),
-                      SizedBox(height: ThemeDimensions.paddingL),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (isEditing) {
-                            // 1. При редактировании обновляем существующий товар
-                            final updatedModel = ProductModel(
-                              id: widget.product!.id,
-                              date: widget.product!.date,
-                              productType: selectedProductType!,
-                              name: nameController.text.trim(),
-                              description: descController.text.trim(),
-                              photoUrl: widget.product!.photoUrl,
-                              // Оставляем текущую ссылку, если новую картинку не выбирали
-                              variants: variants,
-                            );
-
-                            // Отправляем EditEvent (selectedImageBytes может быть null, если фото не меняли)
-                            context.read<AddProductBloc>().add(EditEvent(updatedModel, selectedImageBytes));
-                          } else {
-                            // 2. При создании добавляем новый товар
-                            if (selectedImageBytes == null) return;
-
-                            final newModel = ProductModel(
-                              productType: selectedProductType!,
-                              name: nameController.text.trim(),
-                              description: descController.text.trim(),
-                              photoUrl: '',
-                              variants: variants,
-                            );
-
-                            context.read<AddProductBloc>().add(AddEvent(newModel, selectedImageBytes!));
-                          }
-                        },
-                        child: const Text('Save'),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              )
-            ],
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'ProductType',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: () {
+                              openTypePicker(context);
+                            },
+                            child: const Text('Select type'),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Selected type : ${selectedProductType != null ? selectedProductType?.name : 'not selected'}',
+                            style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Variants', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              TextButton.icon(
+                                onPressed: () => _addOrEditVariant(),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add'),
+                              ),
+                            ],
+                          ),
+                          if (variants.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Text('No variants', style: TextStyle(color: Colors.grey)),
+                            ),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: variants.length,
+                            itemBuilder: (context, index) {
+                              final item = variants[index];
+                              return Card(
+                                elevation: 0,
+                                color: Colors.grey.shade50,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  subtitle: Text(
+                                    'Price: ${item.price} | Netto: ${item.netWeight} кг | Brutto: ${item.grossWeight} кг',
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.blue),
+                                        onPressed: () => _addOrEditVariant(item, index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () {
+                                          setState(() => variants.removeAt(index));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: ThemeDimensions.paddingL),
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        if (isEditing) {
+                          // 1. При редактировании обновляем существующий товар
+                          final updatedModel = ProductModel(
+                            id: widget.product!.id,
+                            date: widget.product!.date,
+                            productType: selectedProductType!,
+                            name: nameController.text.trim(),
+                            description: descController.text.trim(),
+                            photoUrl: widget.product!.photoUrl,
+                            // Оставляем текущую ссылку, если новую картинку не выбирали
+                            variants: variants,
+                          );
+
+                          // Отправляем EditEvent (selectedImageBytes может быть null, если фото не меняли)
+                          context.read<AddProductBloc>().add(EditEvent(updatedModel, selectedImageBytes));
+                        } else {
+                          // 2. При создании добавляем новый товар
+                          if (selectedImageBytes == null) return;
+
+                          final newModel = ProductModel(
+                            productType: selectedProductType!,
+                            name: nameController.text.trim(),
+                            description: descController.text.trim(),
+                            photoUrl: '',
+                            variants: variants,
+                          );
+
+                          context.read<AddProductBloc>().add(AddEvent(newModel, selectedImageBytes!));
+                        }
+                      },
+                      child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -432,6 +553,23 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
     if (v != null) _selectedUnit = v.unit;
   }
 
+  InputDecoration _dialogInputDecoration(String labelText) {
+    return InputDecoration(
+      labelText: labelText,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
@@ -450,6 +588,17 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
                 Text(
                   widget.variant == null ? 'Add variant' : 'Edit variant',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -459,10 +608,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                 // Название варианта
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (example: Box 10 kg)',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: _dialogInputDecoration('Name (example: Box 10 kg)'),
                   validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
                 ),
                 const SizedBox(height: 12),
@@ -474,10 +620,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _priceController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Price',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: _dialogInputDecoration('Price'),
                         validator: (v) => v == null || v.isEmpty ? 'Enter price' : null,
                       ),
                     ),
@@ -485,10 +628,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                     Expanded(
                       child: DropdownButtonFormField<UnitType>(
                         initialValue: _selectedUnit,
-                        decoration: const InputDecoration(
-                          labelText: 'Unit',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: _dialogInputDecoration('Unit'),
                         items: UnitType.values.map((unit) {
                           return DropdownMenuItem(
                             value: unit,
@@ -511,10 +651,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _netWeightController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Netto (кг)',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: _dialogInputDecoration('Netto (kg)'),
                         validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
                       ),
                     ),
@@ -523,10 +660,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _grossWeightController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Brutto (кг)',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: _dialogInputDecoration('Brutto (kg)'),
                         validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
                       ),
                     ),
@@ -541,11 +675,8 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _valueController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Объем / Кол-во',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (v) => v == null || v.isEmpty ? 'Укажите объем' : null,
+                        decoration: _dialogInputDecoration('Vol / Qty'),
+                        validator: (v) => v == null || v.isEmpty ? 'Specify volume' : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -553,10 +684,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _itemsInPackageController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Штук в уп. (опц.)',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: _dialogInputDecoration('Items per pack (opt.)'),
                       ),
                     ),
                   ],
@@ -567,6 +695,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: _submit,
                   child: const Text('Save'),
