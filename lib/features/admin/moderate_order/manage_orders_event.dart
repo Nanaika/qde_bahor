@@ -33,6 +33,26 @@ class ManageOrdersUpdatedEvent extends ManageOrdersEvent {
   List<Object?> get props => [orders];
 }
 
+class DeleteOrderEvent extends ManageOrdersEvent {
+  final String docId;
+
+  const DeleteOrderEvent(this.docId);
+}
+
+class UpdateDriverStatusEvent extends ManageOrdersEvent {
+  final String docId;
+  final DriverStatus status;
+  final String? driverPhone;
+  final String? driverDescription;
+
+  const UpdateDriverStatusEvent({
+    required this.docId,
+    required this.status,
+    this.driverPhone,
+    this.driverDescription,
+  });
+}
+
 /// Ошибка при чтении потока
 class ManageOrdersErrorEvent extends ManageOrdersEvent {
   final String message;

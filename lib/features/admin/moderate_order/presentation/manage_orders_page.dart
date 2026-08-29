@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +27,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Заказы'),
+        title: const Text('Orders'),
       ),
       body: BlocBuilder<ManageOrdersBloc, ManageOrdersState>(
         builder: (context, state) {
@@ -40,7 +41,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
 
           if (state is ManageOrdersSuccess) {
             if (state.orders.isEmpty) {
-              return const Center(child: Text('Заказов нет'));
+              return const Center(child: Text('No orders'));
             }
 
             return ListView.builder(
@@ -96,7 +97,7 @@ class _OrderCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Заказ #${order.id}',
+              'Order #${order.id}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             if (dateFormatted.isNotEmpty) ...[
@@ -140,8 +141,10 @@ class _OrderCard extends StatelessWidget {
                 final item = order.items[index];
 
                 // Вес НЕТТО и БРУТТО для конкретного товара
-                final double itemNetto = (item.variant.netWeight ?? 0) * item.quantity;
-                final double itemBrutto = (item.variant.grossWeight ?? 0) * item.quantity;
+                final double itemNetto =
+                    double.parse(((item.variant.netWeight ?? 0) * item.quantity).toStringAsFixed(1));
+                final double itemBrutto =
+                    double.parse(((item.variant.grossWeight ?? 0) * item.quantity).toStringAsFixed(1));
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -158,7 +161,7 @@ class _OrderCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Нетто: $itemNetto кг  •  Брутто: $itemBrutto кг',
+                              'Netto: $itemNetto kg  •  Brutto: $itemBrutto kg',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.outline,
@@ -167,10 +170,10 @@ class _OrderCard extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text('${item.quantity} шт.'),
+                                Text('${item.quantity} pc.'),
                                 const SizedBox(width: 12),
                                 Text(
-                                  '${item.totalPrice} сум',
+                                  '${item.totalPrice} sum',
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -291,12 +294,12 @@ class _OrderCard extends StatelessWidget {
                     if (order.warehouseStatus == OrderStatus.declined)
                       Column(
                         children: [
-                          Text('Declined reason'),
-                          SizedBox(
+                          const Text('Declined reason'),
+                          const SizedBox(
                             height: 10,
                           ),
                           Text(order.warehouseDeclinedMessage),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                         ],
@@ -336,16 +339,79 @@ class _OrderCard extends StatelessWidget {
                     if (order.accountingStatus == OrderStatus.declined)
                       Column(
                         children: [
-                          Text('Declined reason'),
-                          SizedBox(
+                          const Text('Declined reason'),
+                          const SizedBox(
                             height: 10,
                           ),
                           Text(order.accountingDeclinedMessage),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                         ],
                       ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 16),
+            GestureDetector(
+              onTap: () {
+                showDriverStatusPickerBottomSheet(
+                  context,
+                  title: 'Select status',
+                  currentStatus: order.driverStatus,
+                  id: order.id,
+                  warehouseStatus: order.warehouseStatus,
+                  accountingStatus: order.accountingStatus,
+                );
+              },
+              child: Container(
+                decoration: const BoxDecoration(color: Colors.transparent),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Driver Status:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    buildDriverStatusRow(order.driverStatus),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    if (order.driverStatus == DriverStatus.shipped)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Driver number'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(order.driverPhone),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Text('Details'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            if (order.driverDescription.isNotEmpty) Text(order.driverDescription),
+                          ],
+                        ),
+                      ),
+                    const Divider(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        DeleteOrderButton(
+                          orderId: order.id,
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -358,7 +424,6 @@ class _OrderCard extends StatelessWidget {
 }
 
 Widget buildStatusRow(OrderStatus status) {
-  // Определяем цвет и текст статуса
   Color statusColor;
   Color statusTextColor;
   String statusText;
@@ -375,6 +440,59 @@ Widget buildStatusRow(OrderStatus status) {
       statusText = 'Declined';
       break;
     case OrderStatus.waiting:
+      statusColor = const Color(0xFFFFF8E1);
+      statusTextColor = Colors.amber;
+      statusText = 'Waiting';
+      break;
+  }
+
+  return Row(
+    children: [
+      Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: statusTextColor,
+          shape: BoxShape.circle,
+        ),
+      ),
+      const SizedBox(width: 8),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: statusColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          statusText,
+          style: TextStyle(
+            color: statusTextColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget buildDriverStatusRow(DriverStatus status) {
+  Color statusColor;
+  Color statusTextColor;
+  String statusText;
+
+  switch (status) {
+    case DriverStatus.shipped:
+      statusColor = const Color(0xFFE8F5E9);
+      statusTextColor = const Color(0xFF2E7D32);
+      statusText = 'Shipped';
+      break;
+    case DriverStatus.collecting:
+      statusColor = const Color(0xFFE3F2FD);
+      statusTextColor = const Color(0xFF1565C0);
+      statusText = 'Collecting';
+      break;
+    case DriverStatus.waiting:
       statusColor = const Color(0xFFFFF8E1);
       statusTextColor = Colors.amber;
       statusText = 'Waiting';
@@ -445,7 +563,6 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Handle Bar
                     Center(
                       child: Container(
                         width: 36,
@@ -457,8 +574,6 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                         ),
                       ),
                     ),
-
-                    // Title
                     Padding(
                       padding: const EdgeInsets.only(left: 8, bottom: 12),
                       child: Text(
@@ -468,8 +583,6 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                         ),
                       ),
                     ),
-
-                    // Status List
                     ...OrderStatus.values.map((status) {
                       final isSelected = status == currentStatus;
                       final color = _getStatusColor(status);
@@ -483,7 +596,6 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {
                                 if (isDeclinedStatus) {
-                                  // Переключаем статус без закрытия, чтобы открыть поле
                                   setState(() {
                                     currentStatus = OrderStatus.declined;
                                   });
@@ -549,8 +661,6 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                                 ),
                               ),
                             ),
-
-                            // Поле ввода причины отказа
                             if (isDeclinedStatus && currentStatus == OrderStatus.declined) ...[
                               const SizedBox(height: 8),
                               TextField(
@@ -558,7 +668,7 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                                 maxLines: 2,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
-                                  hintText: 'Укажите причину отказа...',
+                                  hintText: 'Enter reason for decline...',
                                   filled: true,
                                   fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -592,7 +702,7 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                                     ),
                                   ),
                                   child: const Text(
-                                    'Подтвердить отказ',
+                                    'Confirm Decline',
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ),
@@ -644,5 +754,345 @@ String _getStatusText(OrderStatus status) {
       return 'Declined';
     case OrderStatus.waiting:
       return 'Waiting';
+  }
+}
+
+enum DriverStatus {
+  waiting, // Ожидание
+  collecting, // Сбор
+  shipped, // Отправлен
+}
+
+String getDriverStatusText(DriverStatus status) {
+  switch (status) {
+    case DriverStatus.waiting:
+      return 'Waiting';
+    case DriverStatus.collecting:
+      return 'Collecting';
+    case DriverStatus.shipped:
+      return 'Shipped';
+  }
+}
+
+IconData getDriverStatusIcon(DriverStatus status) {
+  switch (status) {
+    case DriverStatus.waiting:
+      return Icons.hourglass_empty;
+    case DriverStatus.collecting:
+      return Icons.inventory_2_outlined;
+    case DriverStatus.shipped:
+      return Icons.local_shipping_outlined;
+  }
+}
+
+Color getDriverStatusColor(DriverStatus status) {
+  switch (status) {
+    case DriverStatus.waiting:
+      return Colors.amber;
+    case DriverStatus.collecting:
+      return Colors.blue;
+    case DriverStatus.shipped:
+      return Colors.green;
+  }
+}
+
+Future<DriverStatus?> showDriverStatusPickerBottomSheet(
+  BuildContext context, {
+  required String title,
+  required DriverStatus currentStatus,
+  required OrderStatus warehouseStatus,
+  required OrderStatus accountingStatus,
+  required String id,
+}) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+
+  final bool isAllowedToChange = warehouseStatus == OrderStatus.accepted && accountingStatus == OrderStatus.accepted;
+
+  final phoneController = TextEditingController();
+  final descriptionController = TextEditingController();
+
+  return showModalBottomSheet<DriverStatus>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: theme.colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Handle Bar
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: theme.dividerColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+
+                    // Title
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, bottom: 12),
+                      child: Text(
+                        title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    if (!isAllowedToChange) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade900.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amber, width: 1),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Status update is unavailable until Warehouse and Accounting approve the order.',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // Список статусов
+                    ...DriverStatus.values.map((status) {
+                      final isSelected = status == currentStatus;
+                      final color = getDriverStatusColor(status);
+                      final isShippedStatus = status == DriverStatus.shipped;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          children: [
+                            InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: !isAllowedToChange
+                                  ? null
+                                  : () {
+                                      if (isShippedStatus) {
+                                        setState(() {
+                                          currentStatus = DriverStatus.shipped;
+                                        });
+                                      } else {
+                                        context.read<ManageOrdersBloc>().add(
+                                              UpdateDriverStatusEvent(
+                                                docId: id,
+                                                status: status,
+                                              ),
+                                            );
+                                        Navigator.pop(context, status);
+                                      }
+                                    },
+                              child: Opacity(
+                                opacity: isAllowedToChange ? 1.0 : 0.5,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? color.withValues(alpha: isDark ? 0.25 : 0.12)
+                                        : (isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected ? color : Colors.transparent,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: color.withValues(alpha: 0.2),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          getDriverStatusIcon(status),
+                                          color: color,
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          getDriverStatusText(status),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                            color: isSelected ? color : theme.textTheme.bodyLarge?.color,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        Icon(
+                                          Icons.check_circle,
+                                          color: color,
+                                          size: 20,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (isShippedStatus && currentStatus == DriverStatus.shipped && isAllowedToChange) ...[
+                              const SizedBox(height: 12),
+
+                              TextField(
+                                controller: phoneController,
+                                keyboardType: TextInputType.phone,
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  hintText: 'Driver\'s phone number',
+                                  prefixIcon: const Icon(Icons.phone),
+                                  filled: true,
+                                  fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Описание / Комментарий
+                              TextField(
+                                controller: descriptionController,
+                                maxLines: 2,
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  hintText: 'Description (delivery details)',
+                                  prefixIcon: const Icon(Icons.notes),
+                                  filled: true,
+                                  fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Кнопка подтверждения
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      (phoneController.text.trim().isEmpty || descriptionController.text.trim().isEmpty)
+                                          ? null
+                                          : () {
+                                              context.read<ManageOrdersBloc>().add(
+                                                    UpdateDriverStatusEvent(
+                                                      docId: id,
+                                                      status: DriverStatus.shipped,
+                                                      driverPhone: phoneController.text.trim(),
+                                                      driverDescription: descriptionController.text.trim(),
+                                                    ),
+                                                  );
+                                              Navigator.pop(context, DriverStatus.shipped);
+                                            },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Confirm Delivery',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+class DeleteOrderButton extends StatelessWidget {
+  final String orderId;
+
+  const DeleteOrderButton({
+    super.key,
+    required this.orderId,
+  });
+
+  void _showDeleteDialog(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (dialogContext) {
+        return CupertinoAlertDialog(
+          title: const Text('Delete Order'),
+          content: const Text(
+            'Are you sure you want to delete this order? This action cannot be undone.',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                context.read<ManageOrdersBloc>().add(DeleteOrderEvent(orderId));
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filledTonal(
+      onPressed: () => _showDeleteDialog(context),
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.red.shade50,
+        foregroundColor: Colors.red,
+      ),
+      icon: const Icon(Icons.delete, size: 20),
+    );
   }
 }

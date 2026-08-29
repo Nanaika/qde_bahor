@@ -20,6 +20,43 @@ class ManageOrdersBloc extends Bloc<ManageOrdersEvent, ManageOrdersState> {
     on<ManageOrdersUpdatedEvent>(_onUpdated);
     on<ManageOrdersErrorEvent>(_onError);
     on<UpdateStatusEvent>(_onUpdateStatus);
+    on<UpdateDriverStatusEvent>(_onUpdateDriverStatus);
+    on<DeleteOrderEvent>(_onDeleteOrder);
+  }
+
+  Future<void> _onDeleteOrder(
+    DeleteOrderEvent event,
+    Emitter<ManageOrdersState> emit,
+  ) async {
+    try {
+      await _firestore.collection(AppConstants.orders).doc(event.docId).delete();
+    } catch (e) {
+      emit(ManageOrdersError('Error on delete order: $e'));
+    }
+  }
+
+  Future<void> _onUpdateDriverStatus(
+    UpdateDriverStatusEvent event,
+    Emitter<ManageOrdersState> emit,
+  ) async {
+    try {
+      final ref = _firestore.collection(AppConstants.orders).doc(event.docId);
+
+      final updateData = <String, dynamic>{
+        'driverStatus': event.status.name,
+      };
+
+      if (event.driverPhone != null) {
+        updateData['driverPhone'] = event.driverPhone;
+      }
+      if (event.driverDescription != null) {
+        updateData['driverDescription'] = event.driverDescription;
+      }
+
+      await ref.update(updateData);
+    } catch (e) {
+      emit(ManageOrdersError('Error driver status update: $e'));
+    }
   }
 
   Future<void> _onSubscribe(

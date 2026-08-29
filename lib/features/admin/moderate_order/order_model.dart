@@ -15,6 +15,10 @@ class OrderModel {
   final String warehouseDeclinedMessage;
   final String accountingDeclinedMessage;
 
+  final DriverStatus driverStatus;
+  final String driverPhone;
+  final String driverDescription;
+
   OrderModel({
     required this.id,
     required this.items,
@@ -25,6 +29,9 @@ class OrderModel {
     this.accountingStatus = OrderStatus.waiting,
     this.warehouseDeclinedMessage = '',
     this.accountingDeclinedMessage = '',
+    this.driverStatus = DriverStatus.waiting,
+    this.driverPhone = '',
+    this.driverDescription = '',
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +55,12 @@ class OrderModel {
       ),
       warehouseDeclinedMessage: json['warehouseDeclinedMessage'] as String? ?? '',
       accountingDeclinedMessage: json['accountingDeclinedMessage'] as String? ?? '',
+      driverStatus: DriverStatus.values.firstWhere(
+        (e) => e.name == json['driverStatus'],
+        orElse: () => DriverStatus.waiting,
+      ),
+      driverPhone: json['driverPhone'] as String? ?? '',
+      driverDescription: json['driverDescription'] as String? ?? '',
     );
   }
 
@@ -61,6 +74,9 @@ class OrderModel {
         'accountingStatus': accountingStatus.name,
         'warehouseDeclinedMessage': warehouseDeclinedMessage,
         'accountingDeclinedMessage': accountingDeclinedMessage,
+        'driverStatus': driverStatus.name,
+        'driverPhone': driverPhone,
+        'driverDescription': driverDescription,
       };
 
   OrderModel copyWith({
@@ -73,6 +89,9 @@ class OrderModel {
     OrderStatus? accountingStatus,
     String? warehouseDeclinedMessage,
     String? accountingDeclinedMessage,
+    DriverStatus? driverStatus,
+    String? driverPhone,
+    String? driverDescription,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -84,6 +103,9 @@ class OrderModel {
       accountingStatus: accountingStatus ?? this.accountingStatus,
       warehouseDeclinedMessage: warehouseDeclinedMessage ?? this.warehouseDeclinedMessage,
       accountingDeclinedMessage: accountingDeclinedMessage ?? this.accountingDeclinedMessage,
+      driverStatus: driverStatus ?? this.driverStatus,
+      driverPhone: driverPhone ?? this.driverPhone,
+      driverDescription: driverDescription ?? this.driverDescription,
     );
   }
 }
