@@ -175,6 +175,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
                                 labelText: 'Full Name',
+                                labelStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
                                 prefixIcon: const Icon(Icons.person_outline_rounded),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -198,6 +201,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
                                 labelText: 'Company Name',
+                                labelStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
                                 prefixIcon: const Icon(Icons.business_rounded),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -223,8 +229,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
+                                labelStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
                                 labelText: 'Phone Number',
                                 hintText: '+998 90 123 45 67',
+                                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
                                 prefixIcon: const Icon(Icons.phone_outlined),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),

@@ -223,7 +223,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                               ),
                             ],
                           ),
-                          if (product.description != null && product.description!.isNotEmpty) ...[
+                          if (product.description!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Text(
                               '${product.description}',
@@ -247,7 +247,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                 return Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
+                                    // color: Colors.grey.shade50,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: Colors.grey.shade200),
                                   ),
@@ -262,7 +262,9 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                       const SizedBox(height: 2),
                                       Text(
                                         'Price: ${variant.price} | Vol: ${variant.value} ${variant.unit.name}',
-                                        style: const TextStyle(fontSize: 11, color: Colors.black87),
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                        ),
                                       ),
                                       Text(
                                         'Netto: ${variant.netWeight}kg | Gross: ${variant.grossWeight}kg',

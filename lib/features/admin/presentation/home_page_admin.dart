@@ -8,9 +8,10 @@ class HomePageAdmin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text(
           'Admin Dashboard',
@@ -29,7 +30,7 @@ class HomePageAdmin extends StatelessWidget {
                 'Quick Actions',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade700,
+                  // color: Colors.grey.shade700,
                 ),
               ),
               const SizedBox(height: 12),
@@ -52,21 +53,21 @@ class HomePageAdmin extends StatelessWidget {
                     title: 'Add type',
                     subtitle: 'Category setup',
                     icon: Icons.category_outlined,
-                    color: Colors.indigo,
+                    color: isDark ? Colors.indigo.shade300 : Colors.indigo,
                     onTap: () => context.push('/add_product_type'),
                   ),
                   _AdminMenuCard(
                     title: 'Manage products',
                     subtitle: 'Edit & Delete',
                     icon: Icons.inventory_2_outlined,
-                    color: Colors.amber.shade800,
+                    color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
                     onTap: () => context.push('/manage_products'),
                   ),
                   _AdminMenuCard(
                     title: 'Manage orders',
                     subtitle: 'Track status',
                     icon: Icons.receipt_long_outlined,
-                    color: Colors.purple,
+                    color: isDark ? Colors.purple.shade300 : Colors.purple,
                     onTap: () => context.push('/manage_orders'),
                   ),
                 ],
@@ -97,7 +98,7 @@ class _AdminMenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      // color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -106,7 +107,7 @@ class _AdminMenuCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: Colors.grey.shade200.withValues(alpha: 0.5)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +116,7 @@ class _AdminMenuCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

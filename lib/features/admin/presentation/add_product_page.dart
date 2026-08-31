@@ -114,15 +114,15 @@ class _AddProductPageState extends State<AddProductPage> {
     return InputDecoration(
       labelText: labelText,
       filled: true,
-      fillColor: Colors.grey.shade50,
+      // fillColor: Colors.grey.shade50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        // borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        // borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -134,7 +134,7 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Product' : 'Add Product'),
         elevation: 0,
@@ -344,7 +344,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               final item = variants[index];
                               return Card(
                                 elevation: 0,
-                                color: Colors.grey.shade50,
+                                // color: Colors.grey.shade50,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   side: BorderSide(color: Colors.grey.shade200),
