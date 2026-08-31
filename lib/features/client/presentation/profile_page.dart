@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/bloc/auth_event.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
 import '../confirm_account/profile_bloc.dart';
 import '../confirm_account/profile_event.dart';
@@ -22,6 +23,8 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _companyController;
   late final TextEditingController _phoneController;
 
+  bool _isRefreshing = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _companyController = TextEditingController(text: user.company);
       _phoneController = TextEditingController(text: user.number);
 
-      // Запрашиваем проверку: есть ли юзер в базе на модерации
+      // Проверяем статус модерации в Firestore
       context.read<ProfileBloc>().add(CheckModerationStatusEvent(user.id));
     } else {
       _nameController = TextEditingController();
@@ -67,12 +70,31 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _handleRefreshStatus(AuthAuthenticatedState authState) async {
+    if (_isRefreshing) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    context.read<AuthBloc>().add(RefreshUserEvent());
+    context.read<ProfileBloc>().add(CheckModerationStatusEvent(authState.user.id));
+
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    if (mounted) {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final authState = context.watch<AuthBloc>().state;
 
-    // Флаг проверки профиля из основного объекта авторизации
+    // Флаг модерации из AuthState
     final bool isUserModerated = authState is AuthAuthenticatedState && authState.user.isModerated;
 
     return Scaffold(
@@ -95,7 +117,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              // Перепроверяем модерацию после успешной отправки
               if (authState is AuthAuthenticatedState) {
                 context.read<ProfileBloc>().add(CheckModerationStatusEvent(authState.user.id));
               }
@@ -104,11 +125,14 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             final isLoading = state is ProfileSubmittingState;
 
-            // Если есть в коллекции модерации -> isPending = true
+            // На модерации ТОЛЬКО если ProfileBloc явно вернул isPending = true
             final bool isPending = state is ProfileModerationStatusState && state.isPending;
 
-            // Блокируем форму, если юзер НА МОДЕРАЦИИ (есть в базе модерации) ИЛИ УЖЕ СМОДЕРИРОВАН
-            final bool isInputBlocked = isPending || isUserModerated || isLoading;
+            // Блокируем ввод ТОЛЬКО если:
+            // 1. Идёт процесс отправки (isLoading)
+            // 2. Аккаунт уже подтверждён (isUserModerated)
+            // 3. Заявка на данный момент находится на рассмотрении (isPending)
+            final bool isInputBlocked = isLoading || isUserModerated || isPending;
 
             return Center(
               child: SingleChildScrollView(
@@ -166,7 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 28),
 
-                            // Name
+                            // Full Name
                             TextFormField(
                               controller: _nameController,
                               enabled: !isInputBlocked,
@@ -192,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 18),
 
-                            // Company
+                            // Company Name
                             TextFormField(
                               controller: _companyController,
                               enabled: !isInputBlocked,
@@ -285,13 +309,56 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 : 'Submit for Verification',
                                         style: theme.textTheme.titleMedium?.copyWith(
                                           color: isInputBlocked
-                                              ? theme.colorScheme.onSurface
+                                              ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
                                               : theme.colorScheme.onPrimary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                               ),
-                            )
+                            ),
+
+                            // Check Status Button
+                            if (!isUserModerated) ...[
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 48,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: theme.colorScheme.primary.withValues(
+                                        alpha: _isRefreshing ? 0.2 : 0.5,
+                                      ),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  onPressed: (_isRefreshing || authState is! AuthAuthenticatedState)
+                                      ? null
+                                      : () => _handleRefreshStatus(authState),
+                                  child: _isRefreshing
+                                      ? SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                        )
+                                      : const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.refresh_rounded, size: 20),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Check Status',
+                                              style: TextStyle(fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

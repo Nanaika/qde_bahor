@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
@@ -5,8 +6,8 @@ import 'package:qde_eco_bahor/features/admin/manage_products/product_types_bloc.
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
 import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 
-import '../../../../core/di/injection_container.dart';
 import '../../../admin/manage_products/manage_products_state.dart';
+import '../../data/models/user_model.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -16,40 +17,63 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({
     required this.authRepository,
   }) : super(const AuthInitialState()) {
-    on<AuthEvent>((event, emit) async {
-      if (event is LoginEvent) {
-        await _onLogin(event.email, event.password, emit);
-      } else if (event is RegisterEvent) {
-        await _onRegister(event.email, event.password, event.name, emit);
-      } else if (event is LogoutEvent) {
-        await _onLogout(emit);
-      } else if (event is CheckAuthStatusEvent) {
-        await _onCheckAuthStatus(emit);
+    on<LoginEvent>(_onLogin);
+    on<RegisterEvent>(_onRegister);
+    on<LogoutEvent>(_onLogout);
+    on<CheckAuthStatusEvent>(_onCheckAuthStatus);
+    on<RefreshUserEvent>(_onRefreshUser);
+  }
+
+  Future<void> _onRefreshUser(
+    RefreshUserEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state is! AuthAuthenticatedState) return;
+    // await Future.delayed(const Duration(seconds: 11));
+    final currentUser = (state as AuthAuthenticatedState).user;
+
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(currentUser.id).get();
+
+      if (doc.exists && doc.data() != null) {
+        final updatedUser = UserModel.fromJson(doc.data()!);
+        emit(AuthAuthenticatedState(updatedUser));
       }
-    });
+    } catch (e) {
+      emit(AuthErrorState(e));
+    }
   }
 
-  Future<void> _onLogin(String email, String password, Emitter<AuthState> emit) async {
+  Future<void> _onLogin(
+    LoginEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoadingState());
     try {
-      final user = await authRepository.login(email, password);
+      final user = await authRepository.login(event.email, event.password);
       emit(AuthAuthenticatedState(user));
     } catch (failure) {
       emit(AuthErrorState(failure));
     }
   }
 
-  Future<void> _onRegister(String email, String password, String name, Emitter<AuthState> emit) async {
+  Future<void> _onRegister(
+    RegisterEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoadingState());
     try {
-      final user = await authRepository.register(email, password, name);
+      final user = await authRepository.register(event.email, event.password, event.name);
       emit(AuthAuthenticatedState(user));
     } catch (failure) {
       emit(AuthErrorState(failure));
     }
   }
 
-  Future<void> _onLogout(Emitter<AuthState> emit) async {
+  Future<void> _onLogout(
+    LogoutEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoadingState());
     try {
       await authRepository.logout();
@@ -59,7 +83,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onCheckAuthStatus(Emitter<AuthState> emit) async {
+  Future<void> _onCheckAuthStatus(
+    CheckAuthStatusEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     try {
       final user = await authRepository.getCurrentUser();
       if (user != null) {
@@ -67,7 +94,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         typesBloc.add(GetProductsTypesEvent());
         final cartBloc = GetIt.I<CartCubit>();
         await cartBloc.loadCart(user.id);
-        // 3. ЖДЕМ, пока ProductTypesBloc вернет Success или Error
+
         await typesBloc.stream.firstWhere(
           (state) => state is ManageProductsTypeSuccess || state is ManageProductsError,
         );

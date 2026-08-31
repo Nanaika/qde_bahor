@@ -5,6 +5,8 @@ import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 import 'package:qde_eco_bahor/features/client/presentation/products_page.dart';
 import 'package:qde_eco_bahor/features/client/presentation/profile_page.dart';
 
+import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/bloc/auth_state.dart';
 import 'orders_page.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -25,50 +27,71 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        bool isModerated = false;
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-            // border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
-            ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          // backgroundColor: Colors.white,
-          // selectedItemColor: theme.primaryColor,
-          unselectedItemColor: Colors.grey.shade500.withValues(alpha: 0.5),
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded),
-              activeIcon: Icon(Icons.grid_view_rounded),
-              label: 'Products',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long_rounded),
-              label: 'Orders',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
+        if (state is AuthAuthenticatedState) {
+          isModerated = state.user.isModerated; // Поле модерации в твоей UserModel
+        }
+
+        // Если не модерирован — жестко держим на 3-й странице (ProfilePage)
+        final activeIndex = isModerated ? _currentIndex : 2;
+
+        return Scaffold(
+          body: IndexedStack(
+            index: activeIndex,
+            children: _pages,
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: activeIndex,
+            onTap: (index) {
+              if (!isModerated && index != 2) {
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Account confirmation required'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                return;
+              }
+
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            type: BottomNavigationBarType.fixed,
+            unselectedItemColor: Colors.grey.shade500.withValues(alpha: 0.5),
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+            elevation: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.grid_view_rounded,
+                  color: !isModerated ? Colors.grey.shade300 : null,
+                ),
+                activeIcon: const Icon(Icons.grid_view_rounded),
+                label: 'Products',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.receipt_long_outlined,
+                  color: !isModerated ? Colors.grey.shade300 : null,
+                ),
+                activeIcon: const Icon(Icons.receipt_long_rounded),
+                label: 'Orders',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline_rounded),
+                activeIcon: Icon(Icons.person_rounded),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
