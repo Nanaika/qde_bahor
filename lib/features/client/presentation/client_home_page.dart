@@ -5,7 +5,8 @@ import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 import 'package:qde_eco_bahor/features/client/presentation/products_page.dart';
 import 'package:qde_eco_bahor/features/client/presentation/profile_page.dart';
 
-// Основной виджет-оболочка с BottomNavigationBar
+import 'orders_page.dart';
+
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -73,23 +74,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 // 2. Страница заказов (Заглушка)
-class OrdersPage extends StatelessWidget {
-  const OrdersPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.bold)),
-        automaticallyImplyLeading: false,
-        elevation: 0,
-      ),
-      body: const Center(
-        child: Text('Orders screen'),
-      ),
-    );
-  }
-}
 
 class CategoryProductGrid extends StatefulWidget {
   final TextEditingController searchController;
