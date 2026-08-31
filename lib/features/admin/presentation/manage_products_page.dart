@@ -178,7 +178,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: theme.primaryColor.withOpacity(0.1),
+                                        // color: theme.primaryColor.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -186,7 +186,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: theme.primaryColor,
+                                          // color: theme.primaryColor,
                                         ),
                                       ),
                                     ),

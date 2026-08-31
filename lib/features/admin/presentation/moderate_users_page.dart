@@ -186,7 +186,7 @@ class _UsersViewState extends State<_UsersView> {
                       onRefresh: _onRefresh,
                       child: ListView.separated(
                         itemCount: filteredUsers.length,
-                        separatorBuilder: (_, __) => const Divider(height: 0.5),
+                        separatorBuilder: (_, __) => const Divider(height: 0.1),
                         itemBuilder: (context, index) {
                           final user = filteredUsers[index];
 
@@ -197,52 +197,14 @@ class _UsersViewState extends State<_UsersView> {
                               children: [
                                 // Верхний ряд: Аватар, имя, роль/статус, меню
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      child: Text(
-                                        user.name.isNotEmpty
-                                            ? user.name[0].toUpperCase()
-                                            : (user.userName.isNotEmpty ? user.userName[0].toUpperCase() : 'U'),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.primary,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-
-                                    // Имя и юзернейм
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            user.name.isNotEmpty ? user.name : user.userName,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            '@${user.userName}',
-                                            style: TextStyle(
-                                              color: Theme.of(context).hintColor,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
                                     // Чип РОЛИ
                                     _buildBadge(
                                       label: user.userType.name.toUpperCase(),
                                       color: user.userType == UserType.accounting ? Colors.purple : Colors.blue,
                                     ),
                                     const SizedBox(width: 6),
-
                                     // Чип СТАТУСА
                                     _buildBadge(
                                       label: user.isModerated ? 'VERIFIED' : 'PENDING',
@@ -295,8 +257,52 @@ class _UsersViewState extends State<_UsersView> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(
+                                  height: 6,
+                                ),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      child: Text(
+                                        user.name.isNotEmpty
+                                            ? user.name[0].toUpperCase()
+                                            : (user.userName.isNotEmpty ? user.userName[0].toUpperCase() : 'U'),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
 
-                                const SizedBox(height: 8),
+                                    // Имя и юзернейм
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            user.name.isNotEmpty ? user.name : user.userName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                            '@${user.userName}',
+                                            style: TextStyle(
+                                              color: Theme.of(context).hintColor,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 12),
 
                                 // Нижний блок: Данные юзера (Компания, Телефон, ID)
                                 Wrap(
@@ -307,6 +313,9 @@ class _UsersViewState extends State<_UsersView> {
                                     _buildInfoRow(Icons.phone_outlined, 'Phone', user.number),
                                     _buildInfoRow(Icons.fingerprint, 'ID', user.id),
                                   ],
+                                ),
+                                const SizedBox(
+                                  height: 8,
                                 ),
                               ],
                             ),
