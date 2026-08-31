@@ -61,6 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
         context.read<ProfileBloc>().add(
               SubmitProfileForVerificationEvent(
                 id: authState.user.id,
+                username: authState.user.userName,
                 fullName: _nameController.text.trim(),
                 companyName: _companyController.text.trim(),
                 phoneNumber: _phoneController.text.trim(),

@@ -9,6 +9,7 @@ class UserModel extends Equatable {
   final String number;
   final bool isModerated;
   final DateTime? createdAt;
+  final UserType userType; // Больше не nullable
 
   const UserModel({
     required this.id,
@@ -18,6 +19,7 @@ class UserModel extends Equatable {
     required this.number,
     this.isModerated = false,
     this.createdAt,
+    this.userType = UserType.client, // По умолчанию — клиент
   });
 
   // Из JSON / Firestore Document
@@ -30,7 +32,19 @@ class UserModel extends Equatable {
       number: json['number'] as String? ?? '',
       isModerated: json['isModerated'] as bool? ?? false,
       createdAt: json['createdAt'] != null ? (json['createdAt'] as Timestamp).toDate() : null,
+      userType: _parseUserType(json['userType']),
     );
+  }
+
+  // Вспомогательный метод для безопасного парсинга enum
+  static UserType _parseUserType(dynamic value) {
+    if (value is String) {
+      return UserType.values.firstWhere(
+        (type) => type.name == value,
+        orElse: () => UserType.client,
+      );
+    }
+    return UserType.client;
   }
 
   // В JSON для сохранения в Firestore
@@ -43,6 +57,7 @@ class UserModel extends Equatable {
       'number': number,
       'isModerated': isModerated,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'userType': userType.name, // Сохраняем как строку ('client', 'admin' и т.д.)
     };
   }
 
@@ -55,5 +70,8 @@ class UserModel extends Equatable {
         number,
         isModerated,
         createdAt,
+        userType,
       ];
 }
+
+enum UserType { client, accounting, warehouse }

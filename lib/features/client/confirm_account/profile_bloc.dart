@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/core/utils/app_constants.dart';
 import 'package:qde_eco_bahor/features/client/confirm_account/user_profile_model.dart';
+import '../../auth/data/models/user_model.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
@@ -20,10 +21,32 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(ProfileSubmittingState());
 
     try {
-      final userProfileModel = UserProfileModel(
-          id: event.id, fullName: event.fullName, companyName: event.companyName, phoneNumber: event.phoneNumber);
-      final ref = db.collection(AppConstants.moderateUsers).doc(event.id);
-      await ref.set(userProfileModel.toJson());
+      final userProfileModel = UserModel(
+        id: event.id,
+        name: event.fullName,
+        company: event.companyName,
+        number: event.phoneNumber,
+        userName: event.username,
+      );
+
+      final batch = db.batch();
+
+// Ссылка на документ в коллекции модерации
+      final moderateRef = db.collection(AppConstants.moderateUsers).doc(event.id);
+
+// Ссылка на документ в основной коллекции пользователей
+      final userRef = db.collection(AppConstants.users).doc(event.id);
+
+      final data = userProfileModel.toJson();
+
+// 1. Записываем в moderateUsers
+      batch.set(moderateRef, data, SetOptions(merge: true));
+
+// 2. Обновляем те же поля в основной коллекции users
+      batch.update(userRef, data);
+
+// Атомарно коммитим обе операции за один сетевой запрос
+      await batch.commit();
 
       emit(const ProfileSubmitSuccessState());
     } catch (e) {

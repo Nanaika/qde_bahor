@@ -42,13 +42,6 @@ class HomePageAdmin extends StatelessWidget {
                 crossAxisSpacing: ThemeDimensions.paddingM,
                 childAspectRatio: 1.1,
                 children: [
-                  // _AdminMenuCard(
-                  //   title: 'Add product',
-                  //   subtitle: 'Create new item',
-                  //   icon: Icons.add_shopping_cart_rounded,
-                  //   color: Colors.green,
-                  //   onTap: () => context.push('/add_product'),
-                  // ),
                   _AdminMenuCard(
                     title: 'Add type',
                     subtitle: 'Category setup',
@@ -69,6 +62,14 @@ class HomePageAdmin extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     color: isDark ? Colors.purple.shade300 : Colors.purple,
                     onTap: () => context.push('/manage_orders'),
+                  ),
+                  _AdminMenuCard(
+                    title: 'Moderate Users',
+                    subtitle: 'Review and verify accounts',
+                    icon: Icons.admin_panel_settings_outlined,
+                    // Или Icons.how_to_reg_outlined
+                    color: isDark ? Colors.cyan.shade300 : Colors.cyan,
+                    onTap: () => context.push('/moderate_users'),
                   ),
                 ],
               ),

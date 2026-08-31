@@ -3,6 +3,7 @@ import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
+import 'package:qde_eco_bahor/features/admin/presentation/moderate_users_page.dart';
 import 'package:qde_eco_bahor/features/cart/presentation/cart_screen.dart';
 import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
@@ -25,6 +26,11 @@ class AppRouter {
         path: '/client_home',
         name: 'client_home',
         builder: (context, state) => const MainNavigationScreen(),
+      ),
+      GoRoute(
+        path: '/moderate_users',
+        name: 'moderate_users',
+        builder: (context, state) => const ModerateUsersPage(),
       ),
       GoRoute(
         path: '/cart',
