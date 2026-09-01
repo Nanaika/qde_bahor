@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:qde_eco_bahor/features/admin/discount/presentation/discounts_page.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.dart';
@@ -26,6 +27,17 @@ class AppRouter {
         path: '/client_home',
         name: 'client_home',
         builder: (context, state) => const MainNavigationScreen(),
+      ),
+      GoRoute(
+        path: '/user_discounts/:userId',
+        name: 'user_discounts',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId'] ?? '';
+
+          return DiscountsPage(
+            userId: userId,
+          );
+        },
       ),
       GoRoute(
         path: '/moderate_users',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../auth/data/models/user_model.dart';
 import '../moderate_users/users_bloc.dart';
@@ -315,8 +316,22 @@ class _UsersViewState extends State<_UsersView> {
                                   ],
                                 ),
                                 const SizedBox(
-                                  height: 8,
+                                  height: 12,
                                 ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    _buildDiscountChip('Discounts', onTap: () {
+                                      context.push(
+                                        '/user_discounts/${user.id}',
+                                      );
+                                    }),
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+                                    _buildRestrictionChip('Restrictions'),
+                                  ],
+                                )
                               ],
                             ),
                           );
@@ -422,6 +437,72 @@ class _UsersViewState extends State<_UsersView> {
           }).toList(),
         );
       },
+    );
+  }
+
+  // 1. Чип СКИДКИ (зеленый/фиолетовый, увеличенный)
+  Widget _buildDiscountChip(String text, {VoidCallback? onTap}) {
+    const color = Colors.lightGreen; // Использовать Colors.green или Colors.purple
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.local_offer_outlined, size: 16, color: color),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: const TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// 2. Чип ОГРАНИЧЕНИЯ (янтарный/оранжевый, увеличенный)
+  Widget _buildRestrictionChip(String text, {VoidCallback? onTap}) {
+    const color = Colors.amber; // Использовать Colors.deepOrange при необходимости
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.block_outlined, size: 16, color: color),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: const TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
