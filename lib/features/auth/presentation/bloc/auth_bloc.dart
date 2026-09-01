@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:qde_eco_bahor/core/utils/app_constants.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/product_types_bloc.dart';
+import 'package:qde_eco_bahor/features/admin/restriction/restricted_product_model.dart';
 import 'package:qde_eco_bahor/features/auth/domain/repositories/auth_repository.dart';
 import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 
@@ -99,6 +100,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             .get();
 
         final discounts = discountsSnapshot.docs.map((doc) => DiscountModel.fromJson(doc.data())).toList();
+
+        final restrictedSnapshot = await FirebaseFirestore.instance
+            .collection(AppConstants.users)
+            .doc(user.id)
+            .collection(AppConstants.restrictedProducts)
+            .get();
+
+        final restricted = restrictedSnapshot.docs.map((doc) => RestrictedProductModel.fromJson(doc.data())).toList();
+
         final typesBloc = GetIt.I<ProductTypesBloc>();
         typesBloc.add(GetProductsTypesEvent());
         final cartBloc = GetIt.I<CartCubit>();
@@ -108,7 +118,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           (state) => state is ManageProductsTypeSuccess || state is ManageProductsError,
         );
 
-        emit(AuthAuthenticatedState(user.copyWith(discounts: discounts)));
+        emit(AuthAuthenticatedState(user.copyWith(discounts: discounts, restricted: restricted)));
       } else {
         emit(const AuthUnauthenticatedState());
       }

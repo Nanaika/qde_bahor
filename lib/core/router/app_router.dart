@@ -10,6 +10,7 @@ import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
 import '../../features/admin/models/product_model.dart';
 import '../../features/admin/presentation/manage_products_page.dart';
+import '../../features/admin/restriction/presentation/restricted_products_page.dart';
 import '../../features/client/presentation/client_home_page.dart';
 
 class AppRouter {
@@ -27,6 +28,17 @@ class AppRouter {
         path: '/client_home',
         name: 'client_home',
         builder: (context, state) => const MainNavigationScreen(),
+      ),
+      GoRoute(
+        path: '/restricted_products/:userId',
+        name: 'restrictedProducts',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId'] ?? '';
+
+          return RestrictedProductsPage(
+            userId: userId,
+          );
+        },
       ),
       GoRoute(
         path: '/user_discounts/:userId',

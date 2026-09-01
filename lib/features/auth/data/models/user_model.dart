@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:qde_eco_bahor/features/admin/discount/discount_model.dart';
+import 'package:qde_eco_bahor/features/admin/restriction/restricted_product_model.dart';
 
 class UserModel extends Equatable {
   final String id;
@@ -12,6 +13,7 @@ class UserModel extends Equatable {
   final DateTime? createdAt;
   final UserType userType;
   final List<DiscountModel> discounts;
+  final List<RestrictedProductModel> restricted;
 
   const UserModel({
     required this.id,
@@ -23,6 +25,7 @@ class UserModel extends Equatable {
     this.createdAt,
     this.userType = UserType.client,
     this.discounts = const [],
+    this.restricted = const [],
   });
 
   UserModel copyWith({
@@ -35,6 +38,7 @@ class UserModel extends Equatable {
     DateTime? createdAt,
     UserType? userType,
     List<DiscountModel>? discounts,
+    List<RestrictedProductModel>? restricted,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -46,6 +50,7 @@ class UserModel extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       userType: userType ?? this.userType,
       discounts: discounts ?? this.discounts,
+      restricted: restricted ?? this.restricted,
     );
   }
 
@@ -62,6 +67,10 @@ class UserModel extends Equatable {
       userType: _parseUserType(json['userType']),
       discounts: (json['discounts'] as List<dynamic>?)
               ?.map((e) => DiscountModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      restricted: (json['restricted'] as List<dynamic>?)
+              ?.map((e) => RestrictedProductModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
@@ -88,6 +97,7 @@ class UserModel extends Equatable {
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       'userType': userType.name, // Сохраняем как строку ('client', 'admin' и т.д.)
       'discounts': discounts.map((d) => d.toJson()).toList(),
+      'restricted': restricted.map((r) => r.toJson()).toList(),
     };
   }
 
@@ -102,6 +112,7 @@ class UserModel extends Equatable {
         createdAt,
         userType,
         discounts,
+        restricted,
       ];
 }
 

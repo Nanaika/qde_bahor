@@ -15,6 +15,7 @@ class AppConstants {
   //db collections names
   static const String users = 'users';
   static const String discounts = 'discounts';
+  static const String restrictedProducts = 'restricted_products';
   static const String moderateUsers = 'moderateUsers';
   static const String products = 'products';
   static const String productsTypes = 'productsTypes';

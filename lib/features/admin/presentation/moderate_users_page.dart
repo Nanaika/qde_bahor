@@ -329,7 +329,9 @@ class _UsersViewState extends State<_UsersView> {
                                     const SizedBox(
                                       width: 4,
                                     ),
-                                    _buildRestrictionChip('Restrictions'),
+                                    _buildRestrictionChip('Restrictions', onTap: () {
+                                      context.push('/restricted_products/${user.id}');
+                                    }),
                                   ],
                                 )
                               ],
