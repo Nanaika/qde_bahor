@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:qde_eco_bahor/features/admin/discount/discount_model.dart';
 
 class UserModel extends Equatable {
   final String id;
@@ -9,7 +10,8 @@ class UserModel extends Equatable {
   final String number;
   final bool isModerated;
   final DateTime? createdAt;
-  final UserType userType; // Больше не nullable
+  final UserType userType;
+  final List<DiscountModel> discounts;
 
   const UserModel({
     required this.id,
@@ -19,8 +21,33 @@ class UserModel extends Equatable {
     required this.number,
     this.isModerated = false,
     this.createdAt,
-    this.userType = UserType.client, // По умолчанию — клиент
+    this.userType = UserType.client,
+    this.discounts = const [],
   });
+
+  UserModel copyWith({
+    String? id,
+    String? userName,
+    String? name,
+    String? company,
+    String? number,
+    bool? isModerated,
+    DateTime? createdAt,
+    UserType? userType,
+    List<DiscountModel>? discounts,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      userName: userName ?? this.userName,
+      name: name ?? this.name,
+      company: company ?? this.company,
+      number: number ?? this.number,
+      isModerated: isModerated ?? this.isModerated,
+      createdAt: createdAt ?? this.createdAt,
+      userType: userType ?? this.userType,
+      discounts: discounts ?? this.discounts,
+    );
+  }
 
   // Из JSON / Firestore Document
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -33,10 +60,13 @@ class UserModel extends Equatable {
       isModerated: json['isModerated'] as bool? ?? false,
       createdAt: json['createdAt'] != null ? (json['createdAt'] as Timestamp).toDate() : null,
       userType: _parseUserType(json['userType']),
+      discounts: (json['discounts'] as List<dynamic>?)
+              ?.map((e) => DiscountModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
-  // Вспомогательный метод для безопасного парсинга enum
   static UserType _parseUserType(dynamic value) {
     if (value is String) {
       return UserType.values.firstWhere(
@@ -47,7 +77,6 @@ class UserModel extends Equatable {
     return UserType.client;
   }
 
-  // В JSON для сохранения в Firestore
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -58,6 +87,7 @@ class UserModel extends Equatable {
       'isModerated': isModerated,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       'userType': userType.name, // Сохраняем как строку ('client', 'admin' и т.д.)
+      'discounts': discounts.map((d) => d.toJson()).toList(),
     };
   }
 
@@ -71,6 +101,7 @@ class UserModel extends Equatable {
         isModerated,
         createdAt,
         userType,
+        discounts,
       ];
 }
 

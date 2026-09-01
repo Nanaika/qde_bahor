@@ -79,16 +79,6 @@ class _OrderCard extends StatelessWidget {
       (sum, item) => sum + ((item.variant.grossWeight ?? 0) * item.quantity),
     );
 
-    // 2. Цены: Обычная (без скидки) и итоговая (со скидкой)
-    final double totalOriginalPrice = order.items.fold(
-      0.0,
-      (sum, item) => sum + (item.variant.price * item.quantity),
-    );
-    final double totalDiscountedPrice = order.items.fold(
-      0.0,
-      (sum, item) => sum + (item.variant.price * item.quantity),
-    );
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -116,15 +106,15 @@ class _OrderCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${order.owner.name}',
+                  order.owner.name,
                   style: const TextStyle(fontWeight: FontWeight.w400),
                 ),
                 Text(
-                  '${order.owner.company}',
+                  order.owner.company,
                   style: const TextStyle(fontWeight: FontWeight.w400),
                 ),
                 Text(
-                  '${order.owner.number}',
+                  order.owner.number,
                   style: const TextStyle(fontWeight: FontWeight.w400),
                 ),
               ],
@@ -243,14 +233,14 @@ class _OrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${totalOriginalPrice} sum',
+                            '${order.totalPrice} sum',
                             style: TextStyle(
                                 fontSize: 13,
                                 color: Theme.of(context).colorScheme.outline,
                                 decoration: TextDecoration.lineThrough),
                           ),
                           Text(
-                            '${totalDiscountedPrice} sum',
+                            '${order.totalDiscountPrice} sum',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

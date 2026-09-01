@@ -137,24 +137,21 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
               ),
             ),
           if (_types.isNotEmpty)
-            Container(
-              // color: Colors.white,
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                // labelColor: theme.primaryColor,
-                unselectedLabelColor: Colors.grey.shade600.withValues(alpha: 0.5),
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
-                indicatorColor: theme.primaryColor,
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.label,
-                tabs: _types.map((cat) {
-                  return Tab(text: cat.getName(currentLang));
-                }).toList(),
-              ),
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              // labelColor: theme.primaryColor,
+              unselectedLabelColor: Colors.grey.shade600.withValues(alpha: 0.5),
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+              indicatorColor: theme.primaryColor,
+              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.label,
+              tabs: _types.map((cat) {
+                return Tab(text: cat.getName(currentLang));
+              }).toList(),
             ),
           // Divider(height: 1, color: Colors.grey.shade200),
           Expanded(

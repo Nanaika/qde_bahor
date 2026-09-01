@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/core/di/injection_container.dart';
+import 'package:qde_eco_bahor/features/admin/discount/discount_model.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 import 'package:qde_eco_bahor/features/cart/cart_bloc.dart';
 import 'package:qde_eco_bahor/features/client/presentation/products_page.dart';
@@ -95,8 +97,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
-
-// 2. Страница заказов (Заглушка)
 
 class CategoryProductGrid extends StatefulWidget {
   final TextEditingController searchController;
@@ -350,7 +350,9 @@ void showProductBottomSheet(BuildContext context, ProductModel product) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => ProductDetailBottomSheet(product: product),
+    builder: (context) => ProductDetailBottomSheet(
+      product: product,
+    ),
   );
 }
 
@@ -367,6 +369,19 @@ class ProductDetailBottomSheet extends StatefulWidget {
 }
 
 class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
+  late final List<DiscountModel> discounts;
+  @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+
+    if (authState is AuthAuthenticatedState) {
+      discounts = authState.user.discounts;
+    } else {
+      discounts = [];
+    }
+  }
+
   final Map<String, int> _selectedQuantities = {};
 
   @override
@@ -378,10 +393,25 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
     double totalPrice = 0;
     int totalCount = 0;
 
+    double totalPriceWithDiscount = 0;
+
     for (var variant in product.variants) {
       final qty = _selectedQuantities[variant.id] ?? 0;
-      totalPrice += (variant.price ?? 0) * qty;
+      if (qty == 0) continue;
+
+      final basePrice = variant.price ?? 0;
+
+      totalPrice += basePrice * qty;
       totalCount += qty;
+
+      // Ищем скидку, если нет — получаем null
+      final discount = discounts.where((d) => d.productId == product.id && d.variantId == variant.id).firstOrNull;
+
+      final discountPercent = discount?.discountPercent ?? 0;
+
+      final finalPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
+
+      totalPriceWithDiscount += finalPrice * qty;
     }
 
     return Container(
@@ -574,24 +604,36 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
               ],
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Selected: $totalCount pcs',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${totalPrice.toStringAsFixed(0)} sum',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Selected: $totalCount pcs',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '${formatNumber(totalPrice)} sum',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                            decoration: TextDecoration.lineThrough),
+                      ),
+                      Text(
+                        '${formatNumber(totalPriceWithDiscount)} sum',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -640,4 +682,23 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
       ),
     );
   }
+}
+
+String formatNumber(num number) {
+  // Округляем до 1 знака после запятой
+  final formatted = number.toStringAsFixed(1);
+  final parts = formatted.split('.');
+
+  // Форматируем целую часть пробелами
+  parts[0] = parts[0].replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (Match m) => '${m[1]} ',
+  );
+
+  // Если дробная часть '.0', убираем её
+  if (parts.length > 1 && parts[1] == '0') {
+    return parts[0];
+  }
+
+  return parts.join('.');
 }

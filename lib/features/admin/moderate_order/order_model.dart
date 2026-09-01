@@ -9,6 +9,7 @@ class OrderModel {
   final List<CartItem> items;
   final UserModel owner;
   final num totalPrice;
+  final num totalDiscountPrice;
   final DateTime? createdAt;
   final OrderStatus warehouseStatus;
   final OrderStatus accountingStatus;
@@ -24,6 +25,7 @@ class OrderModel {
     required this.items,
     required this.owner,
     required this.totalPrice,
+    this.totalDiscountPrice = 0,
     this.createdAt,
     this.warehouseStatus = OrderStatus.waiting,
     this.accountingStatus = OrderStatus.waiting,
@@ -44,6 +46,7 @@ class OrderModel {
         Map<String, dynamic>.from(json['owner'] as Map? ?? {}),
       ),
       totalPrice: json['totalPrice'] as num? ?? 0,
+      totalDiscountPrice: json['totalDiscountPrice'] as num? ?? 0,
       createdAt: json['createdAt'] is Timestamp ? (json['createdAt'] as Timestamp).toDate() : null,
       warehouseStatus: OrderStatus.values.firstWhere(
         (e) => e.name == json['warehouseStatus'],
@@ -69,6 +72,7 @@ class OrderModel {
         'items': items.map((item) => item.toJson()).toList(),
         'owner': owner.toJson(),
         'totalPrice': totalPrice,
+        'totalDiscountPrice': totalDiscountPrice,
         'createdAt': FieldValue.serverTimestamp(),
         'warehouseStatus': warehouseStatus.name,
         'accountingStatus': accountingStatus.name,
@@ -84,6 +88,7 @@ class OrderModel {
     List<CartItem>? items,
     UserModel? owner,
     num? totalPrice,
+    num? totalDiscountPrice,
     DateTime? createdAt,
     OrderStatus? warehouseStatus,
     OrderStatus? accountingStatus,
@@ -98,6 +103,7 @@ class OrderModel {
       items: items ?? this.items,
       owner: owner ?? this.owner,
       totalPrice: totalPrice ?? this.totalPrice,
+      totalDiscountPrice: totalDiscountPrice ?? this.totalDiscountPrice,
       createdAt: createdAt ?? this.createdAt,
       warehouseStatus: warehouseStatus ?? this.warehouseStatus,
       accountingStatus: accountingStatus ?? this.accountingStatus,

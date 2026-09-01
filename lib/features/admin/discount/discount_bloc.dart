@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/core/utils/app_constants.dart';
 
 import 'discount_event.dart';
 import 'discount_model.dart';
@@ -18,7 +19,7 @@ class DiscountsBloc extends Bloc<DiscountsEvent, DiscountsState> {
 
   // Получить подколлекцию
   CollectionReference<Map<String, dynamic>> _discountsRef(String userId) {
-    return _firestore.collection('users').doc(userId).collection('discounts');
+    return _firestore.collection(AppConstants.users).doc(userId).collection(AppConstants.discounts);
   }
 
   // 1. ПОЛУЧЕНИЕ ВСЕХ СКИДОК

@@ -1,13 +1,35 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/order_model.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
+import '../../admin/discount/discount_model.dart';
+import '../../client/presentation/client_home_page.dart';
 import '../cart_bloc.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  late final List<DiscountModel> discounts;
+
+  @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+
+    if (authState is AuthAuthenticatedState) {
+      discounts = authState.user.discounts;
+    } else {
+      discounts = [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +66,23 @@ class CartScreen extends StatelessWidget {
             );
           }
 
+          // Расчет итоговой суммы со скидкой
+          double totalPriceWithDiscount = 0;
+          for (final item in state.items) {
+            final basePrice = item.variant.price ?? 0;
+
+            final discount = discounts.firstWhereOrNull(
+              (d) => d.productId == item.product.id && d.variantId == item.variant.id,
+            );
+
+            final discountPercent = discount?.discountPercent ?? 0;
+            final finalPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
+
+            totalPriceWithDiscount += finalPrice * item.quantity;
+          }
+
+          final hasDiscount = totalPriceWithDiscount < state.totalAmount;
+
           return Column(
             children: [
               Expanded(
@@ -53,6 +92,15 @@ class CartScreen extends StatelessWidget {
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final item = state.items[index];
+
+                    // Расчет скидки для конкретного элемента списка
+                    final basePrice = item.variant.price ?? 0;
+                    final itemDiscount = discounts.firstWhereOrNull(
+                      (d) => d.productId == item.product.id && d.variantId == item.variant.id,
+                    );
+                    final discountPercent = itemDiscount?.discountPercent ?? 0;
+                    final finalUnitPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
+                    final itemTotalPriceWithDiscount = finalUnitPrice * item.quantity;
 
                     return Card(
                       child: Padding(
@@ -98,8 +146,18 @@ class CartScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
+                                  if (discountPercent > 0) ...[
+                                    Text(
+                                      '${formatNumber(item.totalPrice)} sum',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                        decoration: TextDecoration.lineThrough,
+                                      ),
+                                    ),
+                                  ],
                                   Text(
-                                    '${item.totalPrice.toInt()} сум',
+                                    '${formatNumber(itemTotalPriceWithDiscount)} sum',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Theme.of(context).colorScheme.primary,
@@ -153,26 +211,39 @@ class CartScreen extends StatelessWidget {
                   ],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Total (${state.totalCount} pc):',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.outline,
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Total (${state.totalCount} pc):',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
-                        ),
-                        Text(
-                          '${state.totalAmount.toInt()} sum',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(height: 2),
+                          if (hasDiscount) ...[
+                            Text(
+                              '${formatNumber(state.totalAmount)} sum',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade600,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                          Text(
+                            '${formatNumber(totalPriceWithDiscount)} sum',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -188,8 +259,13 @@ class CartScreen extends StatelessWidget {
                           onPressed: () {
                             final authState = context.read<AuthBloc>().state as AuthAuthenticatedState;
                             final user = authState.user;
-                            final order =
-                                OrderModel(id: '', items: state.items, totalPrice: state.totalAmount, owner: user);
+                            final order = OrderModel(
+                              id: '',
+                              items: state.items,
+                              totalPrice: state.totalAmount,
+                              owner: user,
+                              totalDiscountPrice: totalPriceWithDiscount,
+                            );
                             context.read<CartCubit>().addOrder(order);
                           },
                           child: const Text(
