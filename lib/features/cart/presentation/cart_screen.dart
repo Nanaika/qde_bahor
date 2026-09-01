@@ -210,73 +210,80 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Column(
                   children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Total (${state.totalCount} pc):',
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Total (${state.totalCount} pc):',
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              ),
+                              const SizedBox(height: 2),
+                              if (hasDiscount) ...[
+                                Text(
+                                  '${formatNumber(state.totalAmount)} sum',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey.shade600,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                              Text(
+                                '${formatNumber(totalPriceWithDiscount)} sum',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          if (hasDiscount) ...[
-                            Text(
-                              '${formatNumber(state.totalAmount)} sum',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade600,
-                                decoration: TextDecoration.lineThrough,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF7000FF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          ],
-                          Text(
-                            '${formatNumber(totalPriceWithDiscount)} sum',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7000FF),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            final authState = context.read<AuthBloc>().state as AuthAuthenticatedState;
-                            final user = authState.user;
-                            final order = OrderModel(
-                              id: '',
-                              items: state.items,
-                              totalPrice: state.totalAmount,
-                              owner: user,
-                              totalDiscountPrice: totalPriceWithDiscount,
-                            );
-                            context.read<CartCubit>().addOrder(order);
-                          },
-                          child: const Text(
-                            'Checkout',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                            onPressed: () {
+                              final authState = context.read<AuthBloc>().state as AuthAuthenticatedState;
+                              final user = authState.user;
+                              final order = OrderModel(
+                                id: '',
+                                items: state.items,
+                                totalPrice: state.totalAmount,
+                                owner: user,
+                                totalDiscountPrice: totalPriceWithDiscount,
+                              );
+                              context.read<CartCubit>().addOrder(order);
+                            },
+                            child: const Text(
+                              'Checkout',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),

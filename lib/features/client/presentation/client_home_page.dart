@@ -685,77 +685,85 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                 ),
               ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            child: Column(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Selected: $totalCount pcs',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Selected: $totalCount pcs',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${formatNumber(totalPrice)} sum',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade600,
+                                decoration: TextDecoration.lineThrough),
+                          ),
+                          Text(
+                            '${formatNumber(totalPriceWithDiscount)} sum',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${formatNumber(totalPrice)} sum',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
-                            decoration: TextDecoration.lineThrough),
-                      ),
-                      Text(
-                        '${formatNumber(totalPriceWithDiscount)} sum',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7000FF),
-                        // disabledBackgroundColor: Colors.grey.shade300,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                const SizedBox(
+                  height: 6,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7000FF),
+                          // disabledBackgroundColor: Colors.grey.shade300,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      onPressed: totalCount > 0
-                          ? () {
-                              final cartCubit = context.read<CartCubit>();
+                        onPressed: totalCount > 0
+                            ? () {
+                                final cartCubit = context.read<CartCubit>();
 
-                              _selectedQuantities.forEach((variantId, qty) {
-                                if (qty > 0) {
-                                  final variant = product.variants.firstWhere(
-                                    (v) => v.id == variantId,
-                                  );
-                                  cartCubit.addProduct(product, variant, qty);
-                                }
-                              });
+                                _selectedQuantities.forEach((variantId, qty) {
+                                  if (qty > 0) {
+                                    final variant = product.variants.firstWhere(
+                                      (v) => v.id == variantId,
+                                    );
+                                    cartCubit.addProduct(product, variant, qty);
+                                  }
+                                });
 
-                              Navigator.pop(context);
-                            }
-                          : null,
-                      child: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        child: const Text(
+                          'Add to Cart',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
