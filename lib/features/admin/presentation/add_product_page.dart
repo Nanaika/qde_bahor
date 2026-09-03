@@ -113,7 +113,7 @@ class _AddProductPageState extends State<AddProductPage> {
   InputDecoration _customInputDecoration(String labelText) {
     return InputDecoration(
       labelText: labelText,
-      filled: true,
+      // filled: true,
       // fillColor: Colors.grey.shade50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
@@ -557,7 +557,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
     return InputDecoration(
       labelText: labelText,
       filled: true,
-      fillColor: Colors.grey.shade50,
+      // fillColor: Colors.grey.shade50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

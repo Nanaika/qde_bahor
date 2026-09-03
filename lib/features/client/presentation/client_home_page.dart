@@ -529,6 +529,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
 
     double totalPrice = 0;
     int totalCount = 0;
+    int totalBonusCount = 0; // Добавлено для бонусов
     double totalPriceWithDiscount = 0;
 
     for (var variant in product.variants) {
@@ -539,6 +540,13 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
 
       totalPrice += basePrice * qty;
       totalCount += qty;
+
+      // Расчет бонусов по варианту
+      final buyQty = variant.buyQuantity ?? 0;
+      final freeQty = variant.freeQuantity ?? 0;
+      if (buyQty > 0 && freeQty > 0) {
+        totalBonusCount += (qty ~/ buyQty) * freeQty;
+      }
 
       final discount = discounts.where((d) => d.productId == product.id && d.variantId == variant.id).firstOrNull;
 
@@ -693,7 +701,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Вынесенный изолированный счетчик
                       _QuantityCounter(
                         count: count,
                         isSelected: isSelected,
@@ -736,9 +743,31 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'Selected: $totalCount pcs',
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          Row(
+                            children: [
+                              Text(
+                                'Selected: $totalCount pcs',
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              ),
+                              if (totalBonusCount > 0) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade100,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '+ $totalBonusCount free bonus',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange.shade900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -785,7 +814,17 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                     final variant = product.variants.firstWhere(
                                       (v) => v.id == variantId,
                                     );
-                                    cartCubit.addProduct(product, variant, qty);
+
+                                    // Считаем бонус индивидуально для текущего варианта:
+                                    final buyQty = variant.buyQuantity ?? 0;
+                                    final freeQty = variant.freeQuantity ?? 0;
+
+                                    int variantBonus = 0;
+                                    if (buyQty > 0 && freeQty > 0) {
+                                      variantBonus = (qty ~/ buyQty) * freeQty;
+                                    }
+
+                                    cartCubit.addProduct(product, variant, qty, variantBonus);
                                   }
                                 });
 

@@ -112,7 +112,7 @@ class CartCubit extends Cubit<CartState> {
     } catch (e) {}
   }
 
-  void addProduct(ProductModel product, ProductVariant variant, int qty) {
+  void addProduct(ProductModel product, ProductVariant variant, int qty, int bonusQty) {
     final currentItems = List<CartItem>.from(state.items);
     final index = currentItems.indexWhere(
       (item) => item.product.id == product.id && item.variant.id == variant.id,
@@ -120,8 +120,14 @@ class CartCubit extends Cubit<CartState> {
 
     if (index >= 0) {
       currentItems[index].quantity += qty;
+      currentItems[index].bonusQuantity = (currentItems[index].bonusQuantity ?? 0) + bonusQty;
     } else {
-      currentItems.add(CartItem(product: product, variant: variant, quantity: qty));
+      currentItems.add(CartItem(
+        product: product,
+        variant: variant,
+        quantity: qty,
+        bonusQuantity: bonusQty,
+      ));
     }
 
     emit(state.copyWith(items: currentItems, status: CartStatus.initial));

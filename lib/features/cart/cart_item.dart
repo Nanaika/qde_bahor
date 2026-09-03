@@ -7,11 +7,13 @@ class CartItem {
   final ProductModel product;
   final ProductVariant variant;
   int quantity;
+  int bonusQuantity;
 
   CartItem({
     required this.product,
     required this.variant,
     required this.quantity,
+    this.bonusQuantity = 0,
   });
 
   // Возвращаем затертое поле/геттер totalPrice:
@@ -21,6 +23,7 @@ class CartItem {
         'product': product.toJson(),
         'variant': variant.toJson(),
         'quantity': quantity,
+        'bonusQuantity': bonusQuantity,
       };
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -45,17 +48,7 @@ class CartItem {
         Map<String, dynamic>.from(json['variant'] as Map),
       ),
       quantity: json['quantity'] as int,
+      bonusQuantity: (json['bonusQuantity'] as int?) ?? 0,
     );
   }
-  // factory CartItem.fromJson(Map<String, dynamic> json) {
-  //   return CartItem(
-  //     product: ProductModel.fromJson(
-  //       Map<String, dynamic>.from(json['product'] as Map),
-  //     ),
-  //     variant: ProductVariant.fromJson(
-  //       Map<String, dynamic>.from(json['variant'] as Map),
-  //     ),
-  //     quantity: json['quantity'] as int,
-  //   );
-  // }
 }
