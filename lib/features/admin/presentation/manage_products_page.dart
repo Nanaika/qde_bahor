@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/core/utils/time_utils.dart';
@@ -10,6 +11,8 @@ import '../add_product/add_product_state.dart';
 import '../manage_products/manage_products_bloc.dart';
 import '../manage_products/manage_products_event.dart';
 import '../manage_products/manage_products_state.dart';
+import '../models/product_model.dart';
+import '../models/product_variant.dart';
 
 class ManageProductsPage extends StatefulWidget {
   const ManageProductsPage({super.key});
@@ -183,7 +186,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                       ),
                                       child: Text(
                                         '${product.productType.name}',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                           // color: theme.primaryColor,
@@ -226,7 +229,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                           if (product.description!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Text(
-                              '${product.description}',
+                              product.description,
                               style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                             ),
                           ],
@@ -275,6 +278,17 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                 );
                               }).toList(),
                             ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ProductPromoButton(
+                                  product: product,
+                                ),
+                              ],
+                            ),
                           ],
                         ],
                       ),
@@ -316,4 +330,302 @@ void _showDeleteDialog(BuildContext context, String typeId) {
       ],
     ),
   );
+}
+
+class ProductPromoButton extends StatelessWidget {
+  final ProductModel product;
+
+  const ProductPromoButton({
+    super.key,
+    required this.product,
+  });
+
+  bool get _hasAnyPromo => product.variants.any((v) => v.buyQuantity > 0 && v.freeQuantity > 0);
+
+  void _showPromoBottomSheet(BuildContext context) {
+    if (product.variants.isEmpty) return;
+
+    // Локальный массив вариантов для работы в памяти
+    final List<ProductVariant> localVariants = List.from(product.variants);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalContext, setStateModal) {
+            // Проверка: изменилось ли хоть одно поле
+            bool isChanged() {
+              for (int i = 0; i < product.variants.length; i++) {
+                final orig = product.variants[i];
+                final local = localVariants[i];
+                if (orig.buyQuantity != local.buyQuantity || orig.freeQuantity != local.freeQuantity) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
+            final canSave = isChanged();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Bonus (N + M)',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Список всех вариантов
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: localVariants.length,
+                      separatorBuilder: (_, __) => const Divider(height: 24),
+                      itemBuilder: (context, index) {
+                        final variant = localVariants[index];
+
+                        return _PromoVariantItemTile(
+                          key: ValueKey(variant.id),
+                          variant: variant,
+                          onChanged: (updatedVariant) {
+                            localVariants[index] = updatedVariant;
+                            setStateModal(() {}); // Обновляем состояние кнопки "Сохранить"
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Кнопка сохранения
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: canSave
+                          ? () {
+                              context.read<ManageProductsBloc>().add(
+                                    UpdateProductVariantsEvent(
+                                      product: product.copyWith(variants: localVariants),
+                                    ),
+                                  );
+                              Navigator.pop(ctx);
+                            }
+                          : null,
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _showPromoBottomSheet(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: _hasAnyPromo ? Colors.orange.withOpacity(0.15) : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _hasAnyPromo ? Colors.orange : Colors.grey.shade400,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.local_offer_outlined,
+              size: 18,
+              color: _hasAnyPromo ? Colors.orange.shade800 : Colors.grey.shade700,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _hasAnyPromo ? 'Bonus active' : 'Bonus inactive',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _hasAnyPromo ? Colors.orange.shade900 : Colors.grey.shade800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PromoVariantItemTile extends StatefulWidget {
+  final ProductVariant variant;
+  final ValueChanged<ProductVariant> onChanged;
+
+  const _PromoVariantItemTile({
+    super.key,
+    required this.variant,
+    required this.onChanged,
+  });
+
+  @override
+  State<_PromoVariantItemTile> createState() => _PromoVariantItemTileState();
+}
+
+class _PromoVariantItemTileState extends State<_PromoVariantItemTile> {
+  late final TextEditingController buyController;
+  late final TextEditingController freeController;
+
+  @override
+  void initState() {
+    super.initState();
+    buyController = TextEditingController(
+      text: widget.variant.buyQuantity > 0 ? widget.variant.buyQuantity.toString() : '',
+    );
+    freeController = TextEditingController(
+      text: widget.variant.freeQuantity > 0 ? widget.variant.freeQuantity.toString() : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    buyController.dispose();
+    freeController.dispose();
+    super.dispose();
+  }
+
+  void _notifyParent() {
+    final buy = int.tryParse(buyController.text) ?? 0;
+    final free = int.tryParse(freeController.text) ?? 0;
+
+    widget.onChanged(
+      widget.variant.copyWith(
+        buyQuantity: buy,
+        freeQuantity: free,
+      ),
+    );
+  }
+
+  void _clear() {
+    buyController.clear();
+    freeController.clear();
+    setState(() {});
+    _notifyParent();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPromo = (int.tryParse(buyController.text) ?? 0) > 0 && (int.tryParse(freeController.text) ?? 0) > 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                widget.variant.name,
+                maxLines: 2,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(
+              width: 22,
+            ),
+            if (hasPromo)
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
+                onPressed: _clear,
+              ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: buyController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (_) {
+                  setState(() {});
+                  _notifyParent();
+                },
+                decoration: InputDecoration(
+                  labelText: 'Purchase (N)',
+                  hintText: '0',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).hintColor.withValues(alpha: 0.3),
+                  ),
+                  isDense: true,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text('+', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            Expanded(
+              child: TextField(
+                controller: freeController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (_) {
+                  setState(() {});
+                  _notifyParent();
+                },
+                decoration: InputDecoration(
+                  labelText: 'Bonus (M)',
+                  hintText: '0',
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).hintColor.withValues(alpha: 0.3),
+                  ),
+                  isDense: true,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 12,
+        ),
+      ],
+    );
+  }
 }

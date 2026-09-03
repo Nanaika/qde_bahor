@@ -8,9 +8,11 @@ class ProductVariant {
   final UnitType unit; // Единица измерения
   final int? itemsInPackage; // Кол-во штук в упаковке
 
-  // Новые поля для веса
-  final double netWeight; // Вес нетто (в кг)
-  final double grossWeight; // Вес брутто (в кг)
+  final int buyQuantity;
+  final int freeQuantity;
+
+  final double netWeight;
+  final double grossWeight;
 
   ProductVariant({
     required this.id,
@@ -21,6 +23,8 @@ class ProductVariant {
     required this.netWeight,
     required this.grossWeight,
     this.itemsInPackage,
+    this.buyQuantity = 0,
+    this.freeQuantity = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -30,6 +34,8 @@ class ProductVariant {
         'value': value,
         'unit': unit.name,
         'itemsInPackage': itemsInPackage,
+        'buyQuantity': buyQuantity,
+        'freeQuantity': freeQuantity,
         'netWeight': netWeight,
         'grossWeight': grossWeight,
       };
@@ -41,7 +47,35 @@ class ProductVariant {
         value: (json['value'] as num).toDouble(),
         unit: UnitType.values.byName(json['unit']),
         itemsInPackage: json['itemsInPackage'],
+        buyQuantity: json['buyQuantity'] as int? ?? 0,
+        freeQuantity: json['freeQuantity'] as int? ?? 0,
         netWeight: (json['netWeight'] as num).toDouble(),
         grossWeight: (json['grossWeight'] as num).toDouble(),
       );
+
+  ProductVariant copyWith({
+    String? id,
+    String? name,
+    double? price,
+    double? value,
+    UnitType? unit,
+    int? itemsInPackage,
+    int? buyQuantity,
+    int? freeQuantity,
+    double? netWeight,
+    double? grossWeight,
+  }) {
+    return ProductVariant(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      value: value ?? this.value,
+      unit: unit ?? this.unit,
+      itemsInPackage: itemsInPackage ?? this.itemsInPackage,
+      buyQuantity: buyQuantity ?? this.buyQuantity,
+      freeQuantity: freeQuantity ?? this.freeQuantity,
+      netWeight: netWeight ?? this.netWeight,
+      grossWeight: grossWeight ?? this.grossWeight,
+    );
+  }
 }

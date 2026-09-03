@@ -16,6 +16,8 @@ abstract class ManageProductsRemoteDataSource {
   Future deleteType(String id);
 
   Future updateType(ProductTypeModel model);
+
+  Future updateVariantPromo(ProductModel model);
 }
 
 class ManageProductsRemoteDataSourceImpl implements ManageProductsRemoteDataSource {
@@ -67,5 +69,12 @@ class ManageProductsRemoteDataSourceImpl implements ManageProductsRemoteDataSour
           model.toJson(),
           SetOptions(merge: true),
         );
+  }
+
+  @override
+  Future<dynamic> updateVariantPromo(ProductModel model) async {
+    await db.collection(AppConstants.products).doc(model.id).update({
+      'variants': model.variants.map((v) => v.toJson()).toList(),
+    });
   }
 }

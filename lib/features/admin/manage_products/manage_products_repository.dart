@@ -7,4 +7,5 @@ abstract class ManageProductsRepository {
   Future addType(ProductTypeModel model);
   Future deleteType(String id);
   Future updateType(ProductTypeModel model);
+  Future updateVariantPromo(ProductModel model);
 }

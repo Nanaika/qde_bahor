@@ -35,4 +35,9 @@ class ManageProductsRepositoryImpl implements ManageProductsRepository {
   Future<void> updateType(ProductTypeModel model) async {
     return await remoteDataSource.updateType(model);
   }
+
+  @override
+  Future<dynamic> updateVariantPromo(ProductModel model) async {
+    return await remoteDataSource.updateVariantPromo(model);
+  }
 }

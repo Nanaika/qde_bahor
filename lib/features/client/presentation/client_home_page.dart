@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/core/di/injection_container.dart';
 import 'package:qde_eco_bahor/features/admin/discount/discount_model.dart';
@@ -188,6 +189,7 @@ class ProductGridCard extends StatefulWidget {
 
 class _ProductGridCardState extends State<ProductGridCard> {
   late final List<RestrictedProductModel> restricted;
+
   @override
   void initState() {
     super.initState();
@@ -205,6 +207,11 @@ class _ProductGridCardState extends State<ProductGridCard> {
 
     final isRestricted = restricted.any(
       (item) => item.productId == widget.product.id,
+    );
+
+    // Проверка наличия акции (купи N, получи M)
+    final hasPromo = widget.product.variants.any(
+      (v) => (v.buyQuantity ?? 0) > 0 && (v.freeQuantity ?? 0) > 0,
     );
 
     double minPrice = 0;
@@ -254,6 +261,8 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                 color: Colors.grey.shade100,
                                 child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 32),
                               ),
+
+                        // Варианты (Слева вверху)
                         if (variantsCount > 0)
                           Positioned(
                             top: 8,
@@ -261,7 +270,7 @@ class _ProductGridCardState extends State<ProductGridCard> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.65),
+                                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -270,6 +279,54 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                            ),
+                          ),
+
+                        // Бейдж АКЦИИ (Справа вверху)
+                        if (hasPromo)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.orange.shade600,
+                                    Colors.deepOrange.shade600,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.orange.shade900.withValues(alpha: 0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.local_offer_rounded,
+                                    color: Colors.white,
+                                    size: 11,
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'BONUS',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -369,17 +426,15 @@ class _ProductGridCardState extends State<ProductGridCard> {
 
           // 2. Блокирующий слой + акцентная плашка ровно по центру
           if (isRestricted) ...[
-            // Поглощаем тапы, чтобы карточка гарантированно не нажималась
             Positioned.fill(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () {}, // Заглушка клика
+                onTap: () {},
                 child: Container(
                   color: Colors.black.withValues(alpha: 0.05),
                 ),
               ),
             ),
-            // Сама плашка
             Center(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -452,6 +507,8 @@ class ProductDetailBottomSheet extends StatefulWidget {
 
 class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
   late final List<DiscountModel> discounts;
+  final Map<String, int> _selectedQuantities = {};
+
   @override
   void initState() {
     super.initState();
@@ -464,8 +521,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
     }
   }
 
-  final Map<String, int> _selectedQuantities = {};
-
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
@@ -474,7 +529,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
 
     double totalPrice = 0;
     int totalCount = 0;
-
     double totalPriceWithDiscount = 0;
 
     for (var variant in product.variants) {
@@ -486,11 +540,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
       totalPrice += basePrice * qty;
       totalCount += qty;
 
-      // Ищем скидку, если нет — получаем null
       final discount = discounts.where((d) => d.productId == product.id && d.variantId == variant.id).firstOrNull;
 
       final discountPercent = discount?.discountPercent ?? 0;
-
       final finalPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
 
       totalPriceWithDiscount += finalPrice * qty;
@@ -557,9 +609,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
           ),
           const Padding(
             padding: EdgeInsets.only(top: 16.0),
-            child: Divider(
-              height: 0.5,
-            ),
+            child: Divider(height: 0.5),
           ),
           Expanded(
             child: ListView.separated(
@@ -601,65 +651,58 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                               '$variantPrice sum',
                               style: const TextStyle(
                                 fontSize: 14,
-                                // color: theme.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            if ((variant.buyQuantity ?? 0) > 0 && (variant.freeQuantity ?? 0) > 0) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: Colors.orange.shade200,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.card_giftcard_rounded,
+                                      size: 13,
+                                      color: Colors.orange.shade800,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Buy ${variant.buyQuantity}, get ${variant.freeQuantity} free',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.orange.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme
-                              .surfaceContainerHighest, // На светлой — grey.shade100, на темной — темный серый
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                              padding: EdgeInsets.zero,
-                              icon: Icon(
-                                Icons.remove,
-                                size: 18,
-                                color: count > 0 ? theme.colorScheme.onSurface : theme.disabledColor,
-                              ),
-                              onPressed: count > 0
-                                  ? () {
-                                      setState(() {
-                                        _selectedQuantities[variant.id] = count - 1;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                '$count',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                              padding: EdgeInsets.zero,
-                              icon: Icon(
-                                Icons.add,
-                                size: 18,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _selectedQuantities[variant.id] = count + 1;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      )
+                      const SizedBox(width: 8),
+                      // Вынесенный изолированный счетчик
+                      _QuantityCounter(
+                        count: count,
+                        isSelected: isSelected,
+                        onChanged: (newQty) {
+                          setState(() {
+                            _selectedQuantities[variant.id] = newQty;
+                          });
+                        },
+                      ),
                     ],
                   ),
                 );
@@ -675,8 +718,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
               bottom: bottomPadding + 14,
             ),
             decoration: BoxDecoration(
-              // color: Colors.white,
-              // border: Border(top: BorderSide(color: Colors.grey.shade200.withValues(alpha: 0.25))),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
@@ -703,10 +744,11 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                           Text(
                             '${formatNumber(totalPrice)} sum',
                             style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade600,
-                                decoration: TextDecoration.lineThrough),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                              decoration: TextDecoration.lineThrough,
+                            ),
                           ),
                           Text(
                             '${formatNumber(totalPriceWithDiscount)} sum',
@@ -720,9 +762,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 6,
-                ),
+                const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -731,7 +771,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7000FF),
-                          // disabledBackgroundColor: Colors.grey.shade300,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -767,6 +806,120 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Изолированный счетчик количества
+class _QuantityCounter extends StatefulWidget {
+  final int count;
+  final bool isSelected;
+  final ValueChanged<int> onChanged;
+
+  const _QuantityCounter({
+    required this.count,
+    required this.isSelected,
+    required this.onChanged,
+  });
+
+  @override
+  State<_QuantityCounter> createState() => _QuantityCounterState();
+}
+
+class _QuantityCounterState extends State<_QuantityCounter> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '${widget.count}');
+  }
+
+  @override
+  void didUpdateWidget(covariant _QuantityCounter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Синхронизируем текст при кликах по кнопкам + и -, если значение изменилось извне
+    final parsed = int.tryParse(_controller.text) ?? 0;
+    if (parsed != widget.count) {
+      _controller.text = '${widget.count}';
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _controller.text.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _updateCount(int newCount) {
+    final clamped = newCount.clamp(0, 1000000);
+    widget.onChanged(clamped);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+            icon: Icon(
+              Icons.remove,
+              size: 18,
+              color: widget.count > 0 ? theme.colorScheme.onSurface : theme.disabledColor,
+            ),
+            onPressed: widget.count > 0 ? () => _updateCount(widget.count - 1) : null,
+          ),
+          SizedBox(
+            width: 64, // Запас под 7 цифр (1 000 000)
+            child: TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(7),
+              ],
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: widget.isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+              ),
+              decoration: const InputDecoration.collapsed(
+                hintText: '0',
+              ).copyWith(
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              onChanged: (value) {
+                final parsed = int.tryParse(value) ?? 0;
+                _updateCount(parsed);
+              },
+            ),
+          ),
+          IconButton(
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+            icon: Icon(
+              Icons.add,
+              size: 18,
+              color: widget.count < 1000000 ? theme.colorScheme.onSurface : theme.disabledColor,
+            ),
+            onPressed: widget.count < 1000000 ? () => _updateCount(widget.count + 1) : null,
           ),
         ],
       ),
