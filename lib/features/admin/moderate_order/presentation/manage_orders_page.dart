@@ -130,11 +130,17 @@ class _OrderCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = order.items[index];
 
-                // Вес НЕТТО и БРУТТО для конкретного товара
+                // Расчет бонусов для товара
+                final buyQty = item.variant.buyQuantity ?? 0;
+                final freeQty = item.variant.freeQuantity ?? 0;
+                final itemBonus = (buyQty > 0 && freeQty > 0) ? (item.quantity ~/ buyQty) * freeQty : 0;
+                final totalItemQty = item.quantity + itemBonus; // Общее количество с учетом бонусов
+
+                // Вес НЕТТО и БРУТТО с учетом бонусов
                 final double itemNetto =
-                    double.parse(((item.variant.netWeight ?? 0) * item.quantity).toStringAsFixed(1));
+                    double.parse(((item.variant.netWeight ?? 0) * totalItemQty).toStringAsFixed(1));
                 final double itemBrutto =
-                    double.parse(((item.variant.grossWeight ?? 0) * item.quantity).toStringAsFixed(1));
+                    double.parse(((item.variant.grossWeight ?? 0) * totalItemQty).toStringAsFixed(1));
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -160,7 +166,7 @@ class _OrderCard extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text('${item.quantity} pc.'),
+                                Text(itemBonus > 0 ? '${item.quantity} + $itemBonus free pc.' : '${item.quantity} pc.'),
                                 const SizedBox(width: 12),
                                 Text(
                                   '${item.totalPrice} sum',
@@ -200,7 +206,18 @@ class _OrderCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           textAlign: TextAlign.end,
-                          'Netto: ${totalNetto.toStringAsFixed(2)} kg / Brutto: ${totalBrutto.toStringAsFixed(2)} kg',
+                          // Считаем общий вес по всем позициям с учетом их бонусов
+                          'Netto: ${order.items.fold(0.0, (sum, item) {
+                            final buy = item.variant.buyQuantity ?? 0;
+                            final free = item.variant.freeQuantity ?? 0;
+                            final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
+                            return sum + ((item.variant.netWeight ?? 0) * (item.quantity + bonus));
+                          }).toStringAsFixed(2)} kg / Brutto: ${order.items.fold(0.0, (sum, item) {
+                            final buy = item.variant.buyQuantity ?? 0;
+                            final free = item.variant.freeQuantity ?? 0;
+                            final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
+                            return sum + ((item.variant.grossWeight ?? 0) * (item.quantity + bonus));
+                          }).toStringAsFixed(2)} kg',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,
@@ -232,17 +249,20 @@ class _OrderCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
+                          if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
+                            Text(
+                              '${order.totalPrice} sum',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context).colorScheme.outline,
+                                  decoration: TextDecoration.lineThrough),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           Text(
-                            '${order.totalPrice} sum',
-                            style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(context).colorScheme.outline,
-                                decoration: TextDecoration.lineThrough),
-                          ),
-                          Text(
-                            '${order.totalDiscountPrice} sum',
+                            '${order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice} sum',
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF7000FF),
                             ),
