@@ -357,6 +357,9 @@ class _CartScreenState extends State<CartScreen> {
                                 totalPrice: state.totalAmount,
                                 owner: user,
                                 totalDiscountPrice: totalPriceWithDiscount,
+                                totalPaidCount: totalPaidCount,
+                                totalBonusCount: totalBonusCount,
+                                totalQuantityCount: totalPaidCount + totalBonusCount,
                               );
                               context.read<CartCubit>().addOrder(order);
                             },

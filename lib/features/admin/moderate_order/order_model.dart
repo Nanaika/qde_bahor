@@ -16,6 +16,11 @@ class OrderModel {
   final String warehouseDeclinedMessage;
   final String accountingDeclinedMessage;
 
+  // Новые поля для подсчета количества и бонусов
+  final int totalPaidCount;
+  final int totalBonusCount;
+  final int totalQuantityCount;
+
   final DriverStatus driverStatus;
   final String driverPhone;
   final String driverDescription;
@@ -31,6 +36,9 @@ class OrderModel {
     this.accountingStatus = OrderStatus.waiting,
     this.warehouseDeclinedMessage = '',
     this.accountingDeclinedMessage = '',
+    this.totalPaidCount = 0,
+    this.totalBonusCount = 0,
+    this.totalQuantityCount = 0,
     this.driverStatus = DriverStatus.waiting,
     this.driverPhone = '',
     this.driverDescription = '',
@@ -58,6 +66,9 @@ class OrderModel {
       ),
       warehouseDeclinedMessage: json['warehouseDeclinedMessage'] as String? ?? '',
       accountingDeclinedMessage: json['accountingDeclinedMessage'] as String? ?? '',
+      totalPaidCount: json['totalPaidCount'] as int? ?? 0,
+      totalBonusCount: json['totalBonusCount'] as int? ?? 0,
+      totalQuantityCount: json['totalQuantityCount'] as int? ?? 0,
       driverStatus: DriverStatus.values.firstWhere(
         (e) => e.name == json['driverStatus'],
         orElse: () => DriverStatus.waiting,
@@ -78,6 +89,9 @@ class OrderModel {
         'accountingStatus': accountingStatus.name,
         'warehouseDeclinedMessage': warehouseDeclinedMessage,
         'accountingDeclinedMessage': accountingDeclinedMessage,
+        'totalPaidCount': totalPaidCount,
+        'totalBonusCount': totalBonusCount,
+        'totalQuantityCount': totalQuantityCount,
         'driverStatus': driverStatus.name,
         'driverPhone': driverPhone,
         'driverDescription': driverDescription,
@@ -94,6 +108,9 @@ class OrderModel {
     OrderStatus? accountingStatus,
     String? warehouseDeclinedMessage,
     String? accountingDeclinedMessage,
+    int? totalPaidCount,
+    int? totalBonusCount,
+    int? totalQuantityCount,
     DriverStatus? driverStatus,
     String? driverPhone,
     String? driverDescription,
@@ -109,6 +126,9 @@ class OrderModel {
       accountingStatus: accountingStatus ?? this.accountingStatus,
       warehouseDeclinedMessage: warehouseDeclinedMessage ?? this.warehouseDeclinedMessage,
       accountingDeclinedMessage: accountingDeclinedMessage ?? this.accountingDeclinedMessage,
+      totalPaidCount: totalPaidCount ?? this.totalPaidCount,
+      totalBonusCount: totalBonusCount ?? this.totalBonusCount,
+      totalQuantityCount: totalQuantityCount ?? this.totalQuantityCount,
       driverStatus: driverStatus ?? this.driverStatus,
       driverPhone: driverPhone ?? this.driverPhone,
       driverDescription: driverDescription ?? this.driverDescription,

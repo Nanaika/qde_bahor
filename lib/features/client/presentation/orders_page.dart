@@ -98,18 +98,32 @@ class _OrderItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Расчет брутто и нетто
+    // Расчет брутто и нетто с учетом бонусов
     double totalGross = 0.0;
     double totalNet = 0.0;
 
+    // Собираем строки названий продуктов с их количеством и бонусами
+    final productNamesList = <String>[];
+
     for (final item in order.items) {
-      totalGross += item.variant.grossWeight * item.quantity;
-      totalNet += item.variant.netWeight * item.quantity;
+      final buyQty = item.variant.buyQuantity ?? 0;
+      final freeQty = item.variant.freeQuantity ?? 0;
+      final itemBonus = (buyQty > 0 && freeQty > 0) ? (item.quantity ~/ buyQty) * freeQty : 0;
+      final totalItemQty = item.quantity + itemBonus;
+
+      // Вес считает общее количество (оплаченные + бонусные)
+      totalGross += item.variant.grossWeight * totalItemQty;
+      totalNet += item.variant.netWeight * totalItemQty;
+
+      // Текст названия товара с бонусом
+      if (itemBonus > 0) {
+        productNamesList.add('${item.product.name} (${item.variant.name}) x${item.quantity} + $itemBonus free');
+      } else {
+        productNamesList.add('${item.product.name} (${item.variant.name}) x${item.quantity}');
+      }
     }
 
-    // Собираем строки названий продуктов с их количеством
-    final productNames =
-        order.items.map((item) => '${item.product.name} (${item.variant.name}) x${item.quantity}').join(', ');
+    final productNames = productNamesList.join(', ');
 
     return Card(
       elevation: 0,
@@ -178,9 +192,34 @@ class _OrderItemTile extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // 4. Общая сумма
+            // 4. Информация о количестве (Оплачено / Бонусы / Всего)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Quantity (Paid + Bonus)',
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  order.totalBonusCount > 0
+                      ? '${order.totalPaidCount} + ${order.totalBonusCount} free (${order.totalQuantityCount} total)'
+                      : '${order.totalPaidCount} pc',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // 5. Общая сумма
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Total',
@@ -189,18 +228,36 @@ class _OrderItemTile extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                Text(
-                  '${order.totalPrice} sum',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
+                      Text(
+                        '${order.totalPrice} sum',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade600,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      '${order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice} sum',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
             const SizedBox(height: 12),
 
-            // 5. Чипы статусов и доп. инфы в Wrap
+            // 6. Чипы статусов и доп. инфы в Wrap
             Wrap(
               spacing: 8,
               runSpacing: 8,
