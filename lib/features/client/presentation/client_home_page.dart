@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,9 +53,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               if (!isModerated && index != 2) {
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Account confirmation required'),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: Text('Account confirmation required'.tr()),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
                 return;
@@ -76,7 +77,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   color: !isModerated ? Colors.grey.shade300 : null,
                 ),
                 activeIcon: const Icon(Icons.grid_view_rounded),
-                label: 'Products',
+                label: 'Products'.tr(),
               ),
               BottomNavigationBarItem(
                 icon: Icon(
@@ -84,12 +85,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   color: !isModerated ? Colors.grey.shade300 : null,
                 ),
                 activeIcon: const Icon(Icons.receipt_long_rounded),
-                label: 'Orders',
+                label: 'Orders'.tr(),
               ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.person_outline_rounded),
+                activeIcon: const Icon(Icons.person_rounded),
+                label: 'Profile'.tr(),
               ),
             ],
           ),
@@ -151,9 +152,9 @@ class _CategoryProductGridState extends State<CategoryProductGrid> with Automati
           children: [
             Icon(Icons.search_off_rounded, size: 56, color: Colors.grey.shade300),
             const SizedBox(height: 12),
-            const Text(
-              'Nothing found',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+            Text(
+              'Nothing found'.tr(),
+              style: const TextStyle(color: Colors.grey, fontSize: 15),
             ),
           ],
         ),
@@ -273,7 +274,9 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '$variantsCount options',
+                                'variants_count_label'.tr(namedArgs: {
+                                  'count': variantsCount.toString(),
+                                }),
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
@@ -307,18 +310,18 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                   ),
                                 ],
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.local_offer_rounded,
                                     color: Colors.white,
                                     size: 11,
                                   ),
-                                  SizedBox(width: 3),
+                                  const SizedBox(width: 3),
                                   Text(
-                                    'BONUS',
-                                    style: TextStyle(
+                                    'BONUS'.tr(),
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
@@ -372,14 +375,16 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (minPrice > 0) ...[
-                                      const Text(
-                                        'from',
-                                        style: TextStyle(
+                                      Text(
+                                        'from'.tr(),
+                                        style: const TextStyle(
                                           fontSize: 10,
                                         ),
                                       ),
                                       Text(
-                                        '${minPrice.toStringAsFixed(0)} sum',
+                                        'min_price_formatted'.tr(namedArgs: {
+                                          'price': minPrice.toStringAsFixed(0),
+                                        }),
                                         style: const TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -389,7 +394,7 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                       ),
                                     ] else
                                       Text(
-                                        'Out of stock',
+                                        'Out of stock'.tr(),
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: Colors.grey.shade400,
@@ -449,20 +454,20 @@ class _ProductGridCardState extends State<ProductGridCard> {
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.remove_circle_outline_rounded,
                       color: Colors.white,
                       size: 14,
                     ),
-                    SizedBox(width: 6),
+                    const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Not delivered to your region',
+                        'Not delivered to your region'.tr(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -655,7 +660,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '$variantPrice sum',
+                              'variant_price_sum'.tr(namedArgs: {
+                                'price': variantPrice.toString(),
+                              }),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -684,7 +691,10 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                     const SizedBox(width: 4),
                                     Flexible(
                                       child: Text(
-                                        'Buy ${variant.buyQuantity}, get ${variant.freeQuantity} free',
+                                        'variant_promo_offer'.tr(namedArgs: {
+                                          'buyQty': variant.buyQuantity.toString(),
+                                          'freeQty': variant.freeQuantity.toString(),
+                                        }),
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
@@ -745,7 +755,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                           Row(
                             children: [
                               Text(
-                                'Selected: $totalCount pcs',
+                                'selected_items_count'.tr(namedArgs: {
+                                  'count': totalCount.toString(),
+                                }),
                                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                               ),
                               if (totalBonusCount > 0) ...[
@@ -757,7 +769,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
-                                    '+ $totalBonusCount free bonus',
+                                    'total_bonus_count_bonus'.tr(namedArgs: {
+                                      'bonus': totalBonusCount.toString(),
+                                    }),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -770,7 +784,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${formatNumber(totalPrice)} sum',
+                            'total_price_formatted'.tr(namedArgs: {
+                              'price': formatNumber(totalPrice),
+                            }),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -779,7 +795,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                             ),
                           ),
                           Text(
-                            '${formatNumber(totalPriceWithDiscount)} sum',
+                            'total_price_with_discount_formatted'.tr(namedArgs: {
+                              'price': formatNumber(totalPriceWithDiscount),
+                            }),
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -830,9 +848,9 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                 Navigator.pop(context);
                               }
                             : null,
-                        child: const Text(
-                          'Add to Cart',
-                          style: TextStyle(
+                        child: Text(
+                          'Add to Cart'.tr(),
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -851,7 +869,6 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
   }
 }
 
-/// Изолированный счетчик количества
 class _QuantityCounter extends StatefulWidget {
   final int count;
   final bool isSelected;
@@ -879,7 +896,6 @@ class _QuantityCounterState extends State<_QuantityCounter> {
   @override
   void didUpdateWidget(covariant _QuantityCounter oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Синхронизируем текст при кликах по кнопкам + и -, если значение изменилось извне
     final parsed = int.tryParse(_controller.text) ?? 0;
     if (parsed != widget.count) {
       _controller.text = '${widget.count}';

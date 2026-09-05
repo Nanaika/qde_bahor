@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -102,9 +103,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          'Profile'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: const [
           LanguageToggle(),
@@ -167,19 +168,19 @@ class _ProfilePageState extends State<ProfilePage> {
                               _buildStatusBanner(
                                 icon: Icons.verified_user_rounded,
                                 color: Colors.green,
-                                title: 'Account Verified',
-                                subtitle: 'Your profile has been verified.',
+                                title: 'Account Verified'.tr(),
+                                subtitle: 'Your profile has been verified.'.tr(),
                               )
                             else if (isPending)
                               _buildStatusBanner(
                                 icon: Icons.hourglass_top_rounded,
                                 color: Colors.orange,
-                                title: 'Under Review',
-                                subtitle: 'Your profile is currently under moderation.',
+                                title: 'Under Review'.tr(),
+                                subtitle: 'Your profile is currently under moderation.'.tr(),
                               ),
 
                             Text(
-                              'Personal Profile',
+                              'Personal Profile'.tr(),
                               style: theme.textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -188,8 +189,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             const SizedBox(height: 8),
                             Text(
                               isInputBlocked && !isLoading
-                                  ? 'Your profile information is locked.'
-                                  : 'Enter your details below to submit them for verification.',
+                                  ? 'Your profile information is locked.'.tr()
+                                  : 'Enter your details below to submit them for verification.'.tr(),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.hintColor,
                               ),
@@ -205,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               textCapitalization: TextCapitalization.words,
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
-                                labelText: 'Full Name',
+                                labelText: 'Full Name'.tr(),
                                 labelStyle: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
@@ -216,7 +217,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your name';
+                                  return 'Please enter your name'.tr();
                                 }
                                 return null;
                               },
@@ -231,7 +232,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               textCapitalization: TextCapitalization.words,
                               style: theme.textTheme.bodyMedium,
                               decoration: InputDecoration(
-                                labelText: 'Company Name',
+                                labelText: 'Company Name'.tr(),
                                 labelStyle: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
@@ -242,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter company name';
+                                  return 'Please enter company name'.tr();
                                 }
                                 return null;
                               },
@@ -263,8 +264,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 labelStyle: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
-                                labelText: 'Phone Number',
-                                hintText: '+998 90 123 45 67',
+                                labelText: 'Phone Number'.tr(),
+                                hintText: '+998 90 123 45 67'.tr(),
                                 hintStyle: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
@@ -275,10 +276,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter phone number';
+                                  return 'Please enter phone number'.tr();
                                 }
                                 if (value.trim().length < 7) {
-                                  return 'Please enter a valid phone number';
+                                  return 'Please enter a valid phone number'.tr();
                                 }
                                 return null;
                               },
@@ -310,10 +311,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                       )
                                     : Text(
                                         isUserModerated
-                                            ? 'Verified'
+                                            ? 'Verified'.tr()
                                             : isPending
-                                                ? 'Pending Verification'
-                                                : 'Submit for Verification',
+                                                ? 'Pending Verification'.tr()
+                                                : 'Submit for Verification'.tr(),
                                         style: theme.textTheme.titleMedium?.copyWith(
                                           color: isInputBlocked
                                               ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
@@ -352,14 +353,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                             color: theme.colorScheme.primary,
                                           ),
                                         )
-                                      : const Row(
+                                      : Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Icon(Icons.refresh_rounded, size: 20),
-                                            SizedBox(width: 8),
+                                            const Icon(Icons.refresh_rounded, size: 20),
+                                            const SizedBox(width: 8),
                                             Text(
-                                              'Check Status',
-                                              style: TextStyle(fontWeight: FontWeight.w600),
+                                              'Check Status'.tr(),
+                                              style: const TextStyle(fontWeight: FontWeight.w600),
                                             ),
                                           ],
                                         ),

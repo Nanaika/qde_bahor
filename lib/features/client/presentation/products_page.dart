@@ -1,4 +1,5 @@
 // 1. Страница каталога товаров
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -81,9 +82,9 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
             icon: const Icon(Icons.shopping_cart_outlined),
           ),
         ],
-        title: const Text(
-          'Products',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          'Products'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
       ),
@@ -95,7 +96,7 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
               child: TextField(
                 controller: activeSearchController,
                 decoration: InputDecoration(
-                  hintText: 'Search in "${currentCategory.getName(currentLang)}"...',
+                  hintText: 'search_in'.tr(args: [currentCategory.getName(currentLang)]),
                   hintStyle: TextStyle(
                     fontSize: 14,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.35),

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -89,7 +90,7 @@ class _AddProductPageState extends State<AddProductPage> {
     } else {
       // Если типы еще не загружены, можно триггернуть загрузку или показать SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Типы еще не загрузились, подождите...')),
+        SnackBar(content: Text('Types are still loading, please wait...'.tr())),
       );
     }
   }
@@ -136,7 +137,7 @@ class _AddProductPageState extends State<AddProductPage> {
     return Scaffold(
       // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Product' : 'Add Product'),
+        title: Text(isEditing ? 'Edit Product'.tr() : 'Add Product'.tr()),
         elevation: 0,
       ),
       body: BlocConsumer<AddProductBloc, AddProductState>(
@@ -171,25 +172,25 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Name',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Text(
+                            'Name'.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           const SizedBox(height: 8),
                           TextField(
                             controller: nameController,
-                            decoration: _customInputDecoration('Enter product name'),
+                            decoration: _customInputDecoration('Enter product name'.tr()),
                           ),
                           SizedBox(height: ThemeDimensions.paddingM),
-                          const Text(
-                            'Description',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Text(
+                            'Description'.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           const SizedBox(height: 8),
                           TextField(
                             controller: descController,
                             maxLines: 3,
-                            decoration: _customInputDecoration('Enter description'),
+                            decoration: _customInputDecoration('Enter description'.tr()),
                           ),
                         ],
                       ),
@@ -204,9 +205,9 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Photo',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Text(
+                            'Photo'.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           const SizedBox(height: 12),
                           if (selectedImageBytes != null)
@@ -257,7 +258,7 @@ class _AddProductPageState extends State<AddProductPage> {
                                   child: ElevatedButton.icon(
                                     onPressed: _pickImage,
                                     icon: const Icon(Icons.refresh),
-                                    label: const Text('Change photo'),
+                                    label: Text('Change photo'.tr()),
                                   ),
                                 ),
                               ],
@@ -271,7 +272,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               ),
                               onPressed: _pickImage,
                               icon: const Icon(Icons.photo_library),
-                              label: const Text('Pick photo'),
+                              label: Text('Pick photo'.tr()),
                             ),
                         ],
                       ),
@@ -286,9 +287,9 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'ProductType',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Text(
+                            'ProductType'.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           const SizedBox(height: 12),
                           OutlinedButton(
@@ -300,11 +301,11 @@ class _AddProductPageState extends State<AddProductPage> {
                             onPressed: () {
                               openTypePicker(context);
                             },
-                            child: const Text('Select type'),
+                            child: Text('Select type'.tr()),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Selected type : ${selectedProductType != null ? selectedProductType?.name : 'not selected'}',
+                            'selected_type'.tr(args: [selectedProductType?.name.toString() ?? 'not_selected'.tr()]),
                             style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
                           ),
                         ],
@@ -323,18 +324,18 @@ class _AddProductPageState extends State<AddProductPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Variants', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text('Variants'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                               TextButton.icon(
                                 onPressed: () => _addOrEditVariant(),
                                 icon: const Icon(Icons.add),
-                                label: const Text('Add'),
+                                label: Text('Add'.tr()),
                               ),
                             ],
                           ),
                           if (variants.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Text('No variants', style: TextStyle(color: Colors.grey)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text('No variants'.tr(), style: const TextStyle(color: Colors.grey)),
                             ),
                           ListView.builder(
                             shrinkWrap: true,
@@ -353,7 +354,11 @@ class _AddProductPageState extends State<AddProductPage> {
                                 child: ListTile(
                                   title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                                   subtitle: Text(
-                                    'Price: ${item.price} | Netto: ${item.netWeight} кг | Brutto: ${item.grossWeight} кг',
+                                    'product_details_summary'.tr(namedArgs: {
+                                      'price': item.price.toString(),
+                                      'netto': item.netWeight.toString(),
+                                      'brutto': item.grossWeight.toString(),
+                                    }),
                                   ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -416,7 +421,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           context.read<AddProductBloc>().add(AddEvent(newModel, selectedImageBytes!));
                         }
                       },
-                      child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('Save'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -461,17 +466,17 @@ class SelectProductTypeDialog extends StatelessWidget {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Select type'),
+      title: Text('Select type'.tr()),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
       content: SizedBox(
         width: double.maxFinite,
         child: types.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.all(16.0),
+            ? Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'No product types available',
+                  'No product types available'.tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               )
             : ListView.builder(
@@ -501,7 +506,7 @@ class SelectProductTypeDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('Cancel'.tr()),
         ),
       ],
     );
@@ -600,7 +605,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                   ),
                 ),
                 Text(
-                  widget.variant == null ? 'Add variant' : 'Edit variant',
+                  widget.variant == null ? 'Add variant'.tr() : 'Edit variant'.tr(),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -608,8 +613,8 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                 // Название варианта
                 TextFormField(
                   controller: _nameController,
-                  decoration: _dialogInputDecoration('Name (example: Box 10 kg)'),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter name' : null,
+                  decoration: _dialogInputDecoration('Name (example: Box 10 kg)'.tr()),
+                  validator: (v) => v == null || v.isEmpty ? 'Enter name'.tr() : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -620,15 +625,15 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _priceController,
                         keyboardType: TextInputType.number,
-                        decoration: _dialogInputDecoration('Price'),
-                        validator: (v) => v == null || v.isEmpty ? 'Enter price' : null,
+                        decoration: _dialogInputDecoration('Price'.tr()),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter price'.tr() : null,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<UnitType>(
                         initialValue: _selectedUnit,
-                        decoration: _dialogInputDecoration('Unit'),
+                        decoration: _dialogInputDecoration('Unit'.tr()),
                         items: UnitType.values.map((unit) {
                           return DropdownMenuItem(
                             value: unit,
@@ -651,8 +656,8 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _netWeightController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: _dialogInputDecoration('Netto (kg)'),
-                        validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
+                        decoration: _dialogInputDecoration('Netto (kg)'.tr()),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter netto'.tr() : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -660,8 +665,8 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _grossWeightController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: _dialogInputDecoration('Brutto (kg)'),
-                        validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
+                        decoration: _dialogInputDecoration('Brutto (kg)'.tr()),
+                        validator: (v) => v == null || v.isEmpty ? 'Enter brutto'.tr() : null,
                       ),
                     ),
                   ],
@@ -675,8 +680,8 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _valueController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: _dialogInputDecoration('Vol / Qty'),
-                        validator: (v) => v == null || v.isEmpty ? 'Specify volume' : null,
+                        decoration: _dialogInputDecoration('Vol / Qty'.tr()),
+                        validator: (v) => v == null || v.isEmpty ? 'Specify volume'.tr() : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -684,7 +689,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                       child: TextFormField(
                         controller: _itemsInPackageController,
                         keyboardType: TextInputType.number,
-                        decoration: _dialogInputDecoration('Items per pack (opt.)'),
+                        decoration: _dialogInputDecoration('Items per pack (opt.)'.tr()),
                       ),
                     ),
                   ],
@@ -698,7 +703,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: _submit,
-                  child: const Text('Save'),
+                  child: Text('Save'.tr()),
                 ),
               ],
             ),

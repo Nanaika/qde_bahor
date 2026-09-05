@@ -1,13 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/status_type.dart';
 
-import '../manage_order_state.dart';
-import '../manage_orders_bloc.dart';
-import '../manage_orders_event.dart';
-import '../order_model.dart';
+import '../moderate_order/manage_order_state.dart';
+import '../moderate_order/manage_orders_bloc.dart';
+import '../moderate_order/manage_orders_event.dart';
+import '../moderate_order/order_model.dart';
 
 class ManageOrdersPage extends StatefulWidget {
   const ManageOrdersPage({super.key});
@@ -27,7 +27,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Orders'),
+        title: Text('Orders'.tr()),
       ),
       body: BlocBuilder<ManageOrdersBloc, ManageOrdersState>(
         builder: (context, state) {
@@ -41,7 +41,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
 
           if (state is ManageOrdersSuccess) {
             if (state.orders.isEmpty) {
-              return const Center(child: Text('No orders'));
+              return Center(child: Text('No orders'.tr()));
             }
 
             return ListView.builder(
@@ -69,16 +69,19 @@ class _OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormatted = order.createdAt != null ? DateFormat('dd.MM.yyyy HH:mm').format(order.createdAt!) : '';
-    final double totalNetto = order.items.fold(
-      0,
-      (sum, item) => sum + ((item.variant.netWeight ?? 0) * item.quantity),
-    );
+    final netto = order.items.fold(0.0, (sum, item) {
+      final buy = item.variant.buyQuantity ?? 0;
+      final free = item.variant.freeQuantity ?? 0;
+      final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
+      return sum + ((item.variant.netWeight ?? 0) * (item.quantity + bonus));
+    });
 
-    final double totalBrutto = order.items.fold(
-      0,
-      (sum, item) => sum + ((item.variant.grossWeight ?? 0) * item.quantity),
-    );
-
+    final brutto = order.items.fold(0.0, (sum, item) {
+      final buy = item.variant.buyQuantity ?? 0;
+      final free = item.variant.freeQuantity ?? 0;
+      final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
+      return sum + ((item.variant.grossWeight ?? 0) * (item.quantity + bonus));
+    });
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -87,7 +90,7 @@ class _OrderCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Order #${order.id}',
+              'order_number'.tr(args: [order.id.toString()]),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             if (dateFormatted.isNotEmpty) ...[
@@ -101,9 +104,9 @@ class _OrderCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'User',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  'User'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
                   order.owner.name,
@@ -157,7 +160,10 @@ class _OrderCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Netto: $itemNetto kg  •  Brutto: $itemBrutto kg',
+                              'netto_brutto_summary'.tr(namedArgs: {
+                                'netto': itemNetto.toString(),
+                                'brutto': itemBrutto.toString(),
+                              }),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.outline,
@@ -166,10 +172,19 @@ class _OrderCard extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text(itemBonus > 0 ? '${item.quantity} + $itemBonus free pc.' : '${item.quantity} pc.'),
+                                Text(itemBonus > 0
+                                    ? 'item_quantity_bonus'.tr(namedArgs: {
+                                        'quantity': item.quantity.toString(),
+                                        'bonus': itemBonus.toString(),
+                                      })
+                                    : 'item_quantity_normal'.tr(namedArgs: {
+                                        'quantity': item.quantity.toString(),
+                                      })),
                                 const SizedBox(width: 12),
                                 Text(
-                                  '${item.totalPrice} sum',
+                                  'item_total_price'.tr(namedArgs: {
+                                    'price': item.totalPrice.toString(),
+                                  }),
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -186,13 +201,13 @@ class _OrderCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
                 children: [
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Text(
-                          'Total weight:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          'Total weight:'.tr(),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -206,18 +221,10 @@ class _OrderCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           textAlign: TextAlign.end,
-                          // Считаем общий вес по всем позициям с учетом их бонусов
-                          'Netto: ${order.items.fold(0.0, (sum, item) {
-                            final buy = item.variant.buyQuantity ?? 0;
-                            final free = item.variant.freeQuantity ?? 0;
-                            final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
-                            return sum + ((item.variant.netWeight ?? 0) * (item.quantity + bonus));
-                          }).toStringAsFixed(2)} kg / Brutto: ${order.items.fold(0.0, (sum, item) {
-                            final buy = item.variant.buyQuantity ?? 0;
-                            final free = item.variant.freeQuantity ?? 0;
-                            final bonus = (buy > 0 && free > 0) ? (item.quantity ~/ buy) * free : 0;
-                            return sum + ((item.variant.grossWeight ?? 0) * (item.quantity + bonus));
-                          }).toStringAsFixed(2)} kg',
+                          'order_total_weights'.tr(namedArgs: {
+                            'netto': netto.toStringAsFixed(2),
+                            'brutto': brutto.toStringAsFixed(2),
+                          }),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,
@@ -236,9 +243,9 @@ class _OrderCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Total:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Text(
+                    'Total:'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
                     height: 10,
@@ -251,7 +258,9 @@ class _OrderCard extends StatelessWidget {
                         children: [
                           if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
                             Text(
-                              '${order.totalPrice} sum',
+                              'order_total_price'.tr(namedArgs: {
+                                'price': order.totalPrice.toString(),
+                              }),
                               style: TextStyle(
                                   fontSize: 13,
                                   color: Theme.of(context).colorScheme.outline,
@@ -260,7 +269,10 @@ class _OrderCard extends StatelessWidget {
                             const SizedBox(width: 8),
                           ],
                           Text(
-                            '${order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice} sum',
+                            'order_final_price'.tr(namedArgs: {
+                              'price': (order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice)
+                                  .toString(),
+                            }),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -279,7 +291,7 @@ class _OrderCard extends StatelessWidget {
               onTap: () {
                 showStatusPickerBottomSheet(
                   context,
-                  title: 'Select status',
+                  title: 'Select status'.tr(),
                   currentStatus: order.warehouseStatus,
                   id: order.id,
                   statusType: StatusType.storage,
@@ -290,9 +302,9 @@ class _OrderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Warehouse Status:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      'Warehouse Status:'.tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(
                       height: 10,
@@ -304,7 +316,7 @@ class _OrderCard extends StatelessWidget {
                     if (order.warehouseStatus == OrderStatus.declined)
                       Column(
                         children: [
-                          const Text('Declined reason'),
+                          Text('Declined reason:'.tr()),
                           const SizedBox(
                             height: 10,
                           ),
@@ -324,7 +336,7 @@ class _OrderCard extends StatelessWidget {
               onTap: () {
                 showStatusPickerBottomSheet(
                   context,
-                  title: 'Select status',
+                  title: 'Select status'.tr(),
                   currentStatus: order.accountingStatus,
                   id: order.id,
                   statusType: StatusType.accounting,
@@ -335,9 +347,9 @@ class _OrderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Accounting Status:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      'Accounting Status:'.tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(
                       height: 10,
@@ -349,7 +361,7 @@ class _OrderCard extends StatelessWidget {
                     if (order.accountingStatus == OrderStatus.declined)
                       Column(
                         children: [
-                          const Text('Declined reason'),
+                          Text('Declined reason:'.tr()),
                           const SizedBox(
                             height: 10,
                           ),
@@ -368,7 +380,7 @@ class _OrderCard extends StatelessWidget {
               onTap: () {
                 showDriverStatusPickerBottomSheet(
                   context,
-                  title: 'Select status',
+                  title: 'Select status'.tr(),
                   currentStatus: order.driverStatus,
                   id: order.id,
                   warehouseStatus: order.warehouseStatus,
@@ -380,9 +392,9 @@ class _OrderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Driver Status:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      'Driver Status:'.tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(
                       height: 10,
@@ -397,7 +409,7 @@ class _OrderCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Driver number'),
+                            Text('Driver number'.tr()),
                             const SizedBox(
                               height: 10,
                             ),
@@ -405,7 +417,7 @@ class _OrderCard extends StatelessWidget {
                             const SizedBox(
                               height: 10,
                             ),
-                            const Text('Details'),
+                            Text('Details'.tr()),
                             const SizedBox(
                               height: 10,
                             ),
@@ -442,17 +454,17 @@ Widget buildStatusRow(OrderStatus status) {
     case OrderStatus.accepted:
       statusColor = const Color(0xFFE8F5E9);
       statusTextColor = const Color(0xFF2E7D32);
-      statusText = 'Accepted';
+      statusText = 'accepted'.tr();
       break;
     case OrderStatus.declined:
       statusColor = const Color(0xFFFFEBEE);
       statusTextColor = const Color(0xFFC62828);
-      statusText = 'Declined';
+      statusText = 'declined'.tr();
       break;
     case OrderStatus.waiting:
       statusColor = const Color(0xFFFFF8E1);
       statusTextColor = Colors.amber;
-      statusText = 'Waiting';
+      statusText = 'waiting'.tr();
       break;
   }
 
@@ -495,17 +507,17 @@ Widget buildDriverStatusRow(DriverStatus status) {
     case DriverStatus.shipped:
       statusColor = const Color(0xFFE8F5E9);
       statusTextColor = const Color(0xFF2E7D32);
-      statusText = 'Shipped';
+      statusText = 'shipped'.tr();
       break;
     case DriverStatus.collecting:
       statusColor = const Color(0xFFE3F2FD);
       statusTextColor = const Color(0xFF1565C0);
-      statusText = 'Collecting';
+      statusText = 'collecting'.tr();
       break;
     case DriverStatus.waiting:
       statusColor = const Color(0xFFFFF8E1);
       statusTextColor = Colors.amber;
-      statusText = 'Waiting';
+      statusText = 'waiting'.tr();
       break;
   }
 
@@ -678,7 +690,7 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                                 maxLines: 2,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
-                                  hintText: 'Enter reason for decline...',
+                                  hintText: 'Enter reason for decline...'.tr(),
                                   filled: true,
                                   fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -711,9 +723,9 @@ Future<OrderStatus?> showStatusPickerBottomSheet(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Confirm Decline',
-                                    style: TextStyle(color: Colors.white),
+                                  child: Text(
+                                    'Confirm Decline'.tr(),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),
@@ -759,11 +771,11 @@ IconData _getStatusIcon(OrderStatus status) {
 String _getStatusText(OrderStatus status) {
   switch (status) {
     case OrderStatus.accepted:
-      return 'Accepted';
+      return 'accepted'.tr();
     case OrderStatus.declined:
-      return 'Declined';
+      return 'declined'.tr();
     case OrderStatus.waiting:
-      return 'Waiting';
+      return 'waiting'.tr();
   }
 }
 
@@ -776,11 +788,11 @@ enum DriverStatus {
 String getDriverStatusText(DriverStatus status) {
   switch (status) {
     case DriverStatus.waiting:
-      return 'Waiting';
+      return 'waiting'.tr();
     case DriverStatus.collecting:
-      return 'Collecting';
+      return 'collecting'.tr();
     case DriverStatus.shipped:
-      return 'Shipped';
+      return 'shipped'.tr();
   }
 }
 
@@ -876,14 +888,14 @@ Future<DriverStatus?> showDriverStatusPickerBottomSheet(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.amber, width: 1),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.warning_amber_rounded, color: Colors.amber),
-                            SizedBox(width: 8),
+                            const Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Status update is unavailable until Warehouse and Accounting approve the order.',
-                                style: TextStyle(fontSize: 13),
+                                'Status update is unavailable until Warehouse and Accounting approve the order.'.tr(),
+                                style: const TextStyle(fontSize: 13),
                               ),
                             ),
                           ],
@@ -981,7 +993,7 @@ Future<DriverStatus?> showDriverStatusPickerBottomSheet(
                                 keyboardType: TextInputType.phone,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
-                                  hintText: 'Driver\'s phone number',
+                                  hintText: 'Driver\'s phone number'.tr(),
                                   prefixIcon: const Icon(Icons.phone),
                                   filled: true,
                                   fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
@@ -999,7 +1011,7 @@ Future<DriverStatus?> showDriverStatusPickerBottomSheet(
                                 maxLines: 2,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
-                                  hintText: 'Description (delivery details)',
+                                  hintText: 'Description (delivery details)'.tr(),
                                   prefixIcon: const Icon(Icons.notes),
                                   filled: true,
                                   fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : Colors.grey.shade100,
@@ -1035,9 +1047,9 @@ Future<DriverStatus?> showDriverStatusPickerBottomSheet(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Confirm Delivery',
-                                    style: TextStyle(color: Colors.white),
+                                  child: Text(
+                                    'Confirm Delivery'.tr(),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),
@@ -1070,15 +1082,15 @@ class DeleteOrderButton extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return CupertinoAlertDialog(
-          title: const Text('Delete Order'),
-          content: const Text(
-            'Are you sure you want to delete this order? This action cannot be undone.',
+          title: Text('Delete Order'.tr()),
+          content: Text(
+            'Are you sure you want to delete this order? This action cannot be undone.'.tr(),
           ),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text('Cancel'.tr()),
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
@@ -1086,7 +1098,7 @@ class DeleteOrderButton extends StatelessWidget {
                 context.read<ManageOrdersBloc>().add(DeleteOrderEvent(orderId));
                 Navigator.pop(dialogContext);
               },
-              child: const Text('Delete'),
+              child: Text('Delete'.tr()),
             ),
           ],
         );

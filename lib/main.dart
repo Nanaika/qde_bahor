@@ -11,7 +11,6 @@ import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_blo
 import 'package:qde_eco_bahor/features/admin/moderate_order/manage_orders_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/client/confirm_account/profile_bloc.dart';
-import 'package:qde_eco_bahor/generated/locale_keys.g.dart';
 
 import 'core/services/telegram_service.dart';
 import 'features/admin/manage_products/product_types_bloc.dart';
@@ -36,7 +35,7 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('ru')],
+      supportedLocales: const [Locale('en'), Locale('ru'), Locale('uz')],
       path: 'assets/translations',
       startLocale: Locale('en'),
       fallbackLocale: const Locale('en'),
@@ -112,7 +111,6 @@ class _MyAppState extends State<MyApp> {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp.router(
-          title: LocaleKeys.app_name,
           debugShowCheckedModeBanner: false,
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -82,12 +83,11 @@ class _UsersViewState extends State<_UsersView> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Users'),
+          title: Text('Users'.tr()),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _onRefresh,
-              tooltip: 'Refresh Users',
             ),
           ],
         ),
@@ -99,7 +99,7 @@ class _UsersViewState extends State<_UsersView> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search by any field...',
+                  hintText: 'Search by any field...'.tr(),
                   hintStyle: TextStyle(
                     color: theme.hintColor.withValues(alpha: 0.5),
                   ),
@@ -145,7 +145,7 @@ class _UsersViewState extends State<_UsersView> {
                           ElevatedButton.icon(
                             onPressed: _onRefresh,
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
+                            label: Text('Retry'.tr()),
                           ),
                         ],
                       ),
@@ -175,9 +175,9 @@ class _UsersViewState extends State<_UsersView> {
                       return RefreshIndicator(
                         onRefresh: _onRefresh,
                         child: ListView(
-                          children: const [
-                            SizedBox(height: 100),
-                            Center(child: Text('No users found')),
+                          children: [
+                            const SizedBox(height: 100),
+                            Center(child: Text('No users found'.tr())),
                           ],
                         ),
                       );
@@ -208,7 +208,7 @@ class _UsersViewState extends State<_UsersView> {
                                     const SizedBox(width: 6),
                                     // Чип СТАТУСА
                                     _buildBadge(
-                                      label: user.isModerated ? 'VERIFIED' : 'PENDING',
+                                      label: user.isModerated ? 'VERIFIED'.tr() : 'PENDING'.tr(),
                                       color: user.isModerated ? Colors.green : Colors.orange,
                                       icon: user.isModerated ? Icons.verified : Icons.hourglass_top,
                                     ),
@@ -240,17 +240,19 @@ class _UsersViewState extends State<_UsersView> {
                                                 size: 20,
                                               ),
                                               const SizedBox(width: 8),
-                                              Text(user.isModerated ? 'Revoke Moderation' : 'Approve Moderation'),
+                                              Text(user.isModerated
+                                                  ? 'Revoke Moderation'.tr()
+                                                  : 'Approve Moderation'.tr()),
                                             ],
                                           ),
                                         ),
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'change_role',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.manage_accounts_outlined, size: 20),
-                                              SizedBox(width: 8),
-                                              Text('Change Role'),
+                                              const Icon(Icons.manage_accounts_outlined, size: 20),
+                                              const SizedBox(width: 8),
+                                              Text('Change Role'.tr()),
                                             ],
                                           ),
                                         ),
@@ -310,8 +312,8 @@ class _UsersViewState extends State<_UsersView> {
                                   spacing: 16.0,
                                   runSpacing: 6.0,
                                   children: [
-                                    _buildInfoRow(Icons.business_rounded, 'Company', user.company),
-                                    _buildInfoRow(Icons.phone_outlined, 'Phone', user.number),
+                                    _buildInfoRow(Icons.business_rounded, 'Company'.tr(), user.company),
+                                    _buildInfoRow(Icons.phone_outlined, 'Phone'.tr(), user.number),
                                     _buildInfoRow(Icons.fingerprint, 'ID', user.id),
                                   ],
                                 ),
@@ -321,7 +323,7 @@ class _UsersViewState extends State<_UsersView> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    _buildDiscountChip('Discounts', onTap: () {
+                                    _buildDiscountChip('Discounts'.tr(), onTap: () {
                                       context.push(
                                         '/user_discounts/${user.id}',
                                       );
@@ -329,7 +331,7 @@ class _UsersViewState extends State<_UsersView> {
                                     const SizedBox(
                                       width: 4,
                                     ),
-                                    _buildRestrictionChip('Restrictions', onTap: () {
+                                    _buildRestrictionChip('Restrictions'.tr(), onTap: () {
                                       context.push('/restricted_products/${user.id}');
                                     }),
                                   ],
@@ -410,7 +412,7 @@ class _UsersViewState extends State<_UsersView> {
       context: context,
       builder: (dialogContext) {
         return SimpleDialog(
-          title: const Text('Select User Role'),
+          title: Text('Select User Role'.tr()),
           children: UserType.values.map((type) {
             return SimpleDialogOption(
               onPressed: () {

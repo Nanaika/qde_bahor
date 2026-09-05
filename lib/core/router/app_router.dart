@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:qde_eco_bahor/features/admin/discount/presentation/discounts_page.dart';
-import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
+import 'package:qde_eco_bahor/features/admin/presentation/discounts_page.dart';
+import 'package:qde_eco_bahor/features/admin/presentation/manage_orders_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/add_product_type_page.dart';
 import 'package:qde_eco_bahor/features/admin/presentation/home_page_admin.dart';
@@ -10,7 +10,7 @@ import 'package:qde_eco_bahor/features/home/presentation/pages/home_page.dart';
 
 import '../../features/admin/models/product_model.dart';
 import '../../features/admin/presentation/manage_products_page.dart';
-import '../../features/admin/restriction/presentation/restricted_products_page.dart';
+import '../../features/admin/presentation/restricted_products_page.dart';
 import '../../features/client/presentation/client_home_page.dart';
 
 class AppRouter {

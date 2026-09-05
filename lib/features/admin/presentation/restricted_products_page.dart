@@ -1,14 +1,15 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_state.dart';
 
-import '../../models/product_model.dart';
-import '../restricted_product_model.dart';
-import '../restricted_products_bloc.dart';
-import '../restricted_products_event.dart';
-import '../restricted_products_state.dart';
+import '../models/product_model.dart';
+import '../restriction/restricted_product_model.dart';
+import '../restriction/restricted_products_bloc.dart';
+import '../restriction/restricted_products_event.dart';
+import '../restriction/restricted_products_state.dart';
 
 class RestrictedProductsPage extends StatelessWidget {
   final String userId;
@@ -38,11 +39,10 @@ class _UserRestrictedProductsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Restricted Products'),
+        title: Text('Restricted Products'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Add Restriction',
             onPressed: () => _showRestrictionForm(context),
           ),
           const SizedBox(width: 8),
@@ -74,7 +74,7 @@ class _UserRestrictedProductsView extends StatelessWidget {
                         context.read<RestrictedProductsBloc>().add(LoadRestrictedProductsEvent(userId));
                       },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text('Retry'.tr()),
                     ),
                   ],
                 ),
@@ -89,15 +89,15 @@ class _UserRestrictedProductsView extends StatelessWidget {
                     children: [
                       const Icon(Icons.block_outlined, size: 64, color: Colors.grey),
                       const SizedBox(height: 12),
-                      const Text(
-                        'No restricted products found for this user.',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      Text(
+                        'No restricted products found for this user.'.tr(),
+                        style: const TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () => _showRestrictionForm(context),
                         icon: const Icon(Icons.add),
-                        label: const Text('Create First Restriction'),
+                        label: Text('Create First Restriction'.tr()),
                       ),
                     ],
                   ),
@@ -208,15 +208,15 @@ class _UserRestrictedProductsView extends StatelessWidget {
             bloc: productsBloc,
             builder: (context, productsState) {
               if (productsState is ManageProductsLoading || productsState is ManageProductsInitial) {
-                return const SizedBox(
+                return SizedBox(
                   height: 250,
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 12),
-                        Text('Loading products...'),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text('Loading products...'.tr()),
                       ],
                     ),
                   ),
@@ -230,11 +230,11 @@ class _UserRestrictedProductsView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Failed to load products'),
+                        Text('Failed to load products'.tr()),
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () => productsBloc.add(GetProductsEvent()),
-                          child: const Text('Retry'),
+                          child: Text('Retry'.tr()),
                         ),
                       ],
                     ),
@@ -271,7 +271,7 @@ class _UserRestrictedProductsView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isEditing ? 'Edit Restriction' : 'Add New Restriction',
+                            isEditing ? 'Edit Restriction'.tr() : 'Add New Restriction'.tr(),
                             style: Theme.of(sheetContext).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 16),
@@ -279,9 +279,9 @@ class _UserRestrictedProductsView extends StatelessWidget {
                           // Выбор товара из справочника
                           DropdownButtonFormField<String>(
                             value: selectedProduct?.id,
-                            decoration: const InputDecoration(
-                              labelText: 'Select Product',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: 'Select Product'.tr(),
+                              border: const OutlineInputBorder(),
                             ),
                             items: products.map((product) {
                               return DropdownMenuItem<String>(
@@ -300,7 +300,7 @@ class _UserRestrictedProductsView extends StatelessWidget {
                                     });
                                   },
                             validator: (val) {
-                              if (val == null) return 'Please select a product';
+                              if (val == null) return 'Please select a product'.tr();
 
                               final currentRestrictionsState = restrictedProductsBloc.state;
                               if (currentRestrictionsState is RestrictedProductsSuccessState) {
@@ -309,7 +309,7 @@ class _UserRestrictedProductsView extends StatelessWidget {
                                 );
 
                                 if (isDuplicate) {
-                                  return 'Restriction for this product already exists';
+                                  return 'Restriction for this product already exists'.tr();
                                 }
                               }
 
@@ -350,7 +350,7 @@ class _UserRestrictedProductsView extends StatelessWidget {
                                 }
                               },
                               child: Text(
-                                isEditing ? 'Save Changes' : 'Add Restriction',
+                                isEditing ? 'Save Changes'.tr() : 'Add Restriction'.tr(),
                               ),
                             ),
                           ),

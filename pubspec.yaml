@@ -71,4 +71,5 @@ flutter:
   assets:
     - assets/translations/en.json
     - assets/translations/ru.json
+    - assets/translations/uz.json
 

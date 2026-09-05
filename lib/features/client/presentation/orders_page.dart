@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,7 +6,7 @@ import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../../admin/moderate_order/order_model.dart';
-import '../../admin/moderate_order/presentation/manage_orders_page.dart';
+import '../../admin/presentation/manage_orders_page.dart';
 import '../orders/orders_bloc.dart';
 import '../orders/orders_event.dart';
 import '../orders/orders_state.dart';
@@ -24,9 +25,9 @@ class OrdersPage extends StatelessWidget {
     }
 
     if (userId == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: Text('User is no authorized'),
+          child: Text('User is no authorized'.tr()),
         ),
       );
     }
@@ -35,7 +36,7 @@ class OrdersPage extends StatelessWidget {
       create: (context) => ClientOrdersBloc()..add(SubscribeToClientOrdersEvent(userId!)),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('My Orders'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
           automaticallyImplyLeading: false,
           elevation: 0,
         ),
@@ -62,10 +63,10 @@ class OrdersPage extends StatelessWidget {
 
             if (state is ClientOrdersSuccess) {
               if (state.orders.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text(
-                    'You don\'t have any orders yet',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    'You don\'t have any orders yet'.tr(),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 );
               }
@@ -124,7 +125,7 @@ class _OrderItemTile extends StatelessWidget {
     }
 
     final productNames = productNamesList.join(', ');
-
+    final finalPrice = order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice;
     return Card(
       elevation: 0,
       color: theme.colorScheme.surfaceContainerHighest,
@@ -138,7 +139,9 @@ class _OrderItemTile extends StatelessWidget {
           children: [
             // 1. Номер заказа
             Text(
-              'Order #${order.id}',
+              'order_number_title'.tr(namedArgs: {
+                'id': order.id.toString(),
+              }),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -152,7 +155,7 @@ class _OrderItemTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Products: ',
+                  'Products: '.tr(),
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -161,7 +164,7 @@ class _OrderItemTile extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    productNames.isEmpty ? 'No products' : productNames,
+                    productNames.isEmpty ? 'No products'.tr() : productNames,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -176,7 +179,7 @@ class _OrderItemTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Weight (Gross / Net)',
+                  'Weight (Gross / Net)'.tr(),
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -197,7 +200,7 @@ class _OrderItemTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Quantity (Paid + Bonus)',
+                  'Quantity (Paid + Bonus)'.tr(),
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -205,8 +208,14 @@ class _OrderItemTile extends StatelessWidget {
                 ),
                 Text(
                   order.totalBonusCount > 0
-                      ? '${order.totalPaidCount} + ${order.totalBonusCount} free (${order.totalQuantityCount} total)'
-                      : '${order.totalPaidCount} pc',
+                      ? 'order_quantity_details'.tr(namedArgs: {
+                          'paidCount': order.totalPaidCount.toString(),
+                          'bonusCount': order.totalBonusCount.toString(),
+                          'totalCount': order.totalQuantityCount.toString(),
+                        })
+                      : 'order_quantity_single'.tr(namedArgs: {
+                          'paidCount': order.totalPaidCount.toString(),
+                        }),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -222,7 +231,7 @@ class _OrderItemTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total',
+                  'Total'.tr(),
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -233,7 +242,9 @@ class _OrderItemTile extends StatelessWidget {
                   children: [
                     if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
                       Text(
-                        '${order.totalPrice} sum',
+                        'order_total_price_sum'.tr(namedArgs: {
+                          'price': order.totalPrice.toString(),
+                        }),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -244,7 +255,9 @@ class _OrderItemTile extends StatelessWidget {
                       const SizedBox(width: 8),
                     ],
                     Text(
-                      '${order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice} sum',
+                      'order_final_price_sum'.tr(namedArgs: {
+                        'price': finalPrice.toString(),
+                      }),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
@@ -266,21 +279,21 @@ class _OrderItemTile extends StatelessWidget {
                 // Склад
                 _buildStatusChipByEnum(
                   context,
-                  label: 'Warehouse: ${order.warehouseStatus.name}',
+                  label: 'warehouse_status'.tr(args: [order.warehouseStatus.name.tr()]),
                   status: order.warehouseStatus,
                 ),
 
                 // Бухгалтерия
                 _buildStatusChipByEnum(
                   context,
-                  label: 'Accounting: ${order.accountingStatus.name}',
+                  label: 'accounting_status'.tr(args: [order.accountingStatus.name.tr()]),
                   status: order.accountingStatus,
                 ),
 
                 // Водитель (DriverStatus)
                 _buildDriverStatusChip(
                   context,
-                  label: 'Driver: ${order.driverStatus.name}',
+                  label: 'driver_status'.tr(args: [order.driverStatus.name.tr()]),
                   status: order.driverStatus,
                 ),
 
@@ -296,14 +309,14 @@ class _OrderItemTile extends StatelessWidget {
                 if (order.driverDescription.isNotEmpty)
                   _buildBlueChip(
                     context,
-                    label: 'Info: ${order.driverDescription}',
+                    label: 'driver_info'.tr(args: [order.driverDescription]),
                   ),
 
                 // Отказ склада (Красный)
                 if (order.warehouseDeclinedMessage.isNotEmpty)
                   _buildColoredChip(
                     context,
-                    label: 'Warehouse Refusal: ${order.warehouseDeclinedMessage}',
+                    label: 'warehouse_refusal'.tr(args: [order.warehouseDeclinedMessage]),
                     bgColor: const Color(0xFFFFDAD6),
                     textColor: const Color(0xFF410002),
                   ),
@@ -312,7 +325,7 @@ class _OrderItemTile extends StatelessWidget {
                 if (order.accountingDeclinedMessage.isNotEmpty)
                   _buildColoredChip(
                     context,
-                    label: 'Accounting Rejected: ${order.accountingDeclinedMessage}',
+                    label: 'accounting_rejected'.tr(args: [order.accountingDeclinedMessage]),
                     bgColor: const Color(0xFFFFDAD6),
                     textColor: const Color(0xFF410002),
                   ),

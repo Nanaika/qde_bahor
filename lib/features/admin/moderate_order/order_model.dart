@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
+import 'package:qde_eco_bahor/features/admin/presentation/manage_orders_page.dart';
 
 import '../../auth/data/models/user_model.dart';
 import '../../cart/cart_item.dart';

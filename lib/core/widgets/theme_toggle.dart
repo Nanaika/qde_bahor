@@ -1,9 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:qde_eco_bahor/core/di/injection_container.dart';
 import 'package:qde_eco_bahor/core/services/theme_service.dart';
-
-import '../../generated/locale_keys.g.dart';
 
 class ThemeToggle extends StatefulWidget {
   const ThemeToggle({super.key});
@@ -70,7 +67,6 @@ class _ThemeToggleState extends State<ThemeToggle> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(_getThemeIcon()),
-      tooltip: LocaleKeys.theme_toggle.tr(),
       onPressed: _toggleTheme,
     );
   }

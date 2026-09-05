@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/order_model.dart';
@@ -35,7 +36,7 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cart'),
+        title: Text('Cart'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -47,7 +48,7 @@ class _CartScreenState extends State<CartScreen> {
         listener: (context, state) {
           if (state.status == CartStatus.success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Your order has been placed!')),
+              SnackBar(content: Text('Your order has been placed!'.tr())),
             );
           } else if (state.status == CartStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -61,8 +62,8 @@ class _CartScreenState extends State<CartScreen> {
           }
 
           if (state.items.isEmpty) {
-            return const Center(
-              child: Text('Cart is empty'),
+            return Center(
+              child: Text('Cart is empty'.tr()),
             );
           }
 
@@ -156,7 +157,9 @@ class _CartScreenState extends State<CartScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
-                                        'Variant: ${item.variant.name}',
+                                        'item_variant_name'.tr(namedArgs: {
+                                          'name': item.variant.name.toString(),
+                                        }),
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Theme.of(context).colorScheme.outline,
@@ -179,8 +182,13 @@ class _CartScreenState extends State<CartScreen> {
                                         ),
                                         child: Text(
                                           itemBonusQuantity > 0
-                                              ? 'Qty: ${item.quantity} + $itemBonusQuantity free bonus'
-                                              : 'Qty: ${item.quantity}',
+                                              ? 'item_qty_with_bonus'.tr(namedArgs: {
+                                                  'quantity': item.quantity.toString(),
+                                                  'bonus': itemBonusQuantity.toString(),
+                                                })
+                                              : 'item_qty_standard'.tr(namedArgs: {
+                                                  'quantity': item.quantity.toString(),
+                                                }),
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
@@ -193,7 +201,9 @@ class _CartScreenState extends State<CartScreen> {
                                       const SizedBox(height: 4),
                                       if (discountPercent > 0) ...[
                                         Text(
-                                          '${formatNumber(item.totalPrice)} sum',
+                                          'item_total_price_formatted'.tr(namedArgs: {
+                                            'price': formatNumber(item.totalPrice),
+                                          }),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey.shade600,
@@ -202,7 +212,9 @@ class _CartScreenState extends State<CartScreen> {
                                         ),
                                       ],
                                       Text(
-                                        '${formatNumber(itemTotalPriceWithDiscount)} sum',
+                                        'item_total_price_discount_formatted'.tr(namedArgs: {
+                                          'price': formatNumber(itemTotalPriceWithDiscount),
+                                        }),
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Theme.of(context).colorScheme.primary,
@@ -282,7 +294,9 @@ class _CartScreenState extends State<CartScreen> {
                                               border: Border.all(color: Colors.transparent, width: 0.8),
                                             ),
                                             child: Text(
-                                              'Total: $totalPaidCount pc',
+                                              'order_total_paid_count'.tr(namedArgs: {
+                                                'count': totalPaidCount.toString(),
+                                              }),
                                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                             ),
                                           ),
@@ -296,7 +310,9 @@ class _CartScreenState extends State<CartScreen> {
                                                 border: Border.all(color: Colors.orange.shade200, width: 0.8),
                                               ),
                                               child: Text(
-                                                '+ $totalBonusCount free',
+                                                'order_total_bonus_count'.tr(namedArgs: {
+                                                  'bonus': totalBonusCount.toString(),
+                                                }),
                                                 style: TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.bold,
@@ -314,7 +330,9 @@ class _CartScreenState extends State<CartScreen> {
                               const SizedBox(height: 2),
                               if (hasDiscount) ...[
                                 Text(
-                                  '${formatNumber(state.totalAmount)} sum',
+                                  'state_total_amount_formatted'.tr(namedArgs: {
+                                    'amount': formatNumber(state.totalAmount),
+                                  }),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -324,7 +342,9 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                               ],
                               Text(
-                                '${formatNumber(totalPriceWithDiscount)} sum',
+                                'total_price_with_discount_formatted'.tr(namedArgs: {
+                                  'price': formatNumber(totalPriceWithDiscount),
+                                }),
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -363,9 +383,9 @@ class _CartScreenState extends State<CartScreen> {
                               );
                               context.read<CartCubit>().addOrder(order);
                             },
-                            child: const Text(
-                              'Checkout',
-                              style: TextStyle(
+                            child: Text(
+                              'Checkout'.tr(),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,7 +53,7 @@ class _AddProductTypePageState extends State<AddProductTypePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage types'),
+        title: Text('Manage types'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -88,7 +89,7 @@ class _AddProductTypePageState extends State<AddProductTypePage> {
                       // Повторный запрос данных
                       context.read<ManageProductsBloc>().add(GetProductsTypesEvent());
                     },
-                    child: const Text('Retry'),
+                    child: Text('Retry'.tr()),
                   ),
                 ],
               ),
@@ -101,8 +102,8 @@ class _AddProductTypePageState extends State<AddProductTypePage> {
 
             // Если список пуст
             if (types.isEmpty) {
-              return const Center(
-                child: Text('No types'),
+              return Center(
+                child: Text('No types'.tr()),
               );
             }
 
@@ -211,8 +212,8 @@ class _EditProductTypeSheetState extends State<EditProductTypeSheet> {
 
     if (nameMap.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enter name at least in one'),
+        SnackBar(
+          content: Text('Enter name at least in one'.tr()),
         ),
       );
       return;
@@ -242,7 +243,7 @@ class _EditProductTypeSheetState extends State<EditProductTypeSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isEdit ? 'Edit product type' : 'Add product type',
+                  isEdit ? 'Edit product type'.tr() : 'Add product type'.tr(),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
@@ -254,19 +255,19 @@ class _EditProductTypeSheetState extends State<EditProductTypeSheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _controllers['ru'],
-              decoration: const InputDecoration(
-                labelText: 'Name (RU)',
-                hintText: 'Example: Напитки',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'Name (RU)'.tr(),
+                hintText: 'Example: Drinks'.tr(),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _controllers['uz'],
-              decoration: const InputDecoration(
-                labelText: 'Name (UZ)',
-                hintText: 'Example: Ichimliklar',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'Name (UZ)'.tr(),
+                hintText: 'Example: Drinks'.tr(),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
@@ -276,7 +277,7 @@ class _EditProductTypeSheetState extends State<EditProductTypeSheet> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: Text(
-                isEdit ? 'Save' : 'Add',
+                isEdit ? 'Save'.tr() : 'Add'.tr(),
                 style: const TextStyle(fontSize: 16),
               ),
             ),
@@ -291,12 +292,12 @@ void _showDeleteDialog(BuildContext context, String typeId) {
   showCupertinoDialog(
     context: context,
     builder: (ctx) => CupertinoAlertDialog(
-      title: const Text('Delete product type?'),
-      content: const Text('It is cannot be undone'),
+      title: Text('Delete product type?'.tr()),
+      content: Text('It is cannot be undone'.tr()),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text('Cancel'.tr()),
         ),
         CupertinoDialogAction(
           isDestructiveAction: true, // Делает текст красным
@@ -306,7 +307,7 @@ void _showDeleteDialog(BuildContext context, String typeId) {
             // Вызов события BLoC или функции удаления:
             context.read<ProductTypesBloc>().add(DeleteProductsTypeEvent(typeId));
           },
-          child: const Text('Delete'),
+          child: Text('Delete'.tr()),
         ),
       ],
     ),

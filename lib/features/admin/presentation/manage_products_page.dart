@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +36,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
     return Scaffold(
       // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Manage products'),
+        title: Text('Manage products'.tr()),
         elevation: 0,
         actions: [
           IconButton(
@@ -92,7 +93,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                           context.read<ManageProductsBloc>().add(GetProductsEvent());
                         },
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
+                        label: Text('Retry'.tr()),
                       ),
                     ],
                   ),
@@ -113,7 +114,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                       Icon(Icons.inventory_2_outlined, size: 56, color: Colors.grey.shade400),
                       const SizedBox(height: 12),
                       Text(
-                        'No products',
+                        'No products'.tr(),
                         style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                       ),
                     ],
@@ -238,9 +239,9 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                               padding: EdgeInsets.symmetric(vertical: 8),
                               child: Divider(height: 1),
                             ),
-                            const Text(
-                              'Variants:',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                            Text(
+                              'Variants:'.tr(),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
                             ),
                             const SizedBox(height: 6),
                             Wrap(
@@ -264,13 +265,20 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Price: ${variant.price} | Vol: ${variant.value} ${variant.unit.name}',
+                                        'variant_price_volume'.tr(namedArgs: {
+                                          'price': variant.price.toString(),
+                                          'value': variant.value.toString(),
+                                          'unit': variant.unit.name.toString(),
+                                        }),
                                         style: const TextStyle(
                                           fontSize: 11,
                                         ),
                                       ),
                                       Text(
-                                        'Netto: ${variant.netWeight}kg | Gross: ${variant.grossWeight}kg',
+                                        'variant_weights_summary'.tr(namedArgs: {
+                                          'netto': variant.netWeight.toString(),
+                                          'gross': variant.grossWeight.toString(),
+                                        }),
                                         style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                                       ),
                                     ],
@@ -310,12 +318,12 @@ void _showDeleteDialog(BuildContext context, String typeId) {
   showCupertinoDialog(
     context: context,
     builder: (ctx) => CupertinoAlertDialog(
-      title: const Text('Delete product?'),
-      content: const Text('It is cannot be undone'),
+      title: Text('Delete product?'.tr()),
+      content: Text('It is cannot be undone'.tr()),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text('Cancel'.tr()),
         ),
         CupertinoDialogAction(
           isDestructiveAction: true, // Делает текст красным
@@ -325,7 +333,7 @@ void _showDeleteDialog(BuildContext context, String typeId) {
             // Вызов события BLoC или функции удаления:
             context.read<AddProductBloc>().add(DeleteEvent(typeId));
           },
-          child: const Text('Delete'),
+          child: Text('Delete'.tr()),
         ),
       ],
     ),
@@ -385,9 +393,9 @@ class ProductPromoButton extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Bonus (N + M)',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      Text(
+                        'Bonus (N + M)'.tr(),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -437,7 +445,7 @@ class ProductPromoButton extends StatelessWidget {
                               Navigator.pop(ctx);
                             }
                           : null,
-                      child: const Text('Save'),
+                      child: Text('Save'.tr()),
                     ),
                   ),
                 ],
@@ -457,7 +465,7 @@ class ProductPromoButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: _hasAnyPromo ? Colors.orange.withOpacity(0.15) : Colors.grey.shade200,
+          color: _hasAnyPromo ? Colors.orange.withValues(alpha: 0.15) : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _hasAnyPromo ? Colors.orange : Colors.grey.shade400,
@@ -473,7 +481,7 @@ class ProductPromoButton extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              _hasAnyPromo ? 'Bonus active' : 'Bonus inactive',
+              _hasAnyPromo ? 'Bonus active'.tr() : 'Bonus inactive'.tr(),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -586,7 +594,7 @@ class _PromoVariantItemTileState extends State<_PromoVariantItemTile> {
                   _notifyParent();
                 },
                 decoration: InputDecoration(
-                  labelText: 'Purchase (N)',
+                  labelText: 'Purchase (N)'.tr(),
                   hintText: '0',
                   hintStyle: TextStyle(
                     color: Theme.of(context).hintColor.withValues(alpha: 0.3),
@@ -610,7 +618,7 @@ class _PromoVariantItemTileState extends State<_PromoVariantItemTile> {
                   _notifyParent();
                 },
                 decoration: InputDecoration(
-                  labelText: 'Bonus (M)',
+                  labelText: 'Bonus (M)'.tr(),
                   hintText: '0',
                   hintStyle: TextStyle(
                     color: Theme.of(context).hintColor.withValues(alpha: 0.3),
@@ -622,7 +630,7 @@ class _PromoVariantItemTileState extends State<_PromoVariantItemTile> {
             ),
           ],
         ),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
       ],

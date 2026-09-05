@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
@@ -16,9 +17,9 @@ class HomePageAdmin extends StatelessWidget {
     return Scaffold(
       // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
-          'Admin Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          'Admin Dashboard'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: const [
           LanguageToggle(),
@@ -34,7 +35,7 @@ class HomePageAdmin extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quick Actions',
+                'Quick Actions'.tr(),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   // color: Colors.grey.shade700,
@@ -50,29 +51,29 @@ class HomePageAdmin extends StatelessWidget {
                 childAspectRatio: 1.1,
                 children: [
                   _AdminMenuCard(
-                    title: 'Add type',
-                    subtitle: 'Category setup',
+                    title: 'Add type'.tr(),
+                    subtitle: 'Category setup'.tr(),
                     icon: Icons.category_outlined,
                     color: isDark ? Colors.indigo.shade300 : Colors.indigo,
                     onTap: () => context.push('/add_product_type'),
                   ),
                   _AdminMenuCard(
-                    title: 'Manage products',
-                    subtitle: 'Edit & Delete',
+                    title: 'Manage products'.tr(),
+                    subtitle: 'Edit & Delete'.tr(),
                     icon: Icons.inventory_2_outlined,
                     color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
                     onTap: () => context.push('/manage_products'),
                   ),
                   _AdminMenuCard(
-                    title: 'Manage orders',
-                    subtitle: 'Track status',
+                    title: 'Manage orders'.tr(),
+                    subtitle: 'Track status'.tr(),
                     icon: Icons.receipt_long_outlined,
                     color: isDark ? Colors.purple.shade300 : Colors.purple,
                     onTap: () => context.push('/manage_orders'),
                   ),
                   _AdminMenuCard(
-                    title: 'Moderate Users',
-                    subtitle: 'Review and verify accounts',
+                    title: 'Moderate Users'.tr(),
+                    subtitle: 'Review and verify accounts'.tr(),
                     icon: Icons.admin_panel_settings_outlined,
                     // Или Icons.how_to_reg_outlined
                     color: isDark ? Colors.cyan.shade300 : Colors.cyan,

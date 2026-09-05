@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,12 +6,12 @@ import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_blo
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_event.dart';
 import 'package:qde_eco_bahor/features/admin/manage_products/manage_products_state.dart';
 
-import '../../models/product_model.dart';
-import '../../models/product_variant.dart';
-import '../discount_bloc.dart';
-import '../discount_event.dart';
-import '../discount_model.dart';
-import '../discount_state.dart';
+import '../models/product_model.dart';
+import '../models/product_variant.dart';
+import '../discount/discount_bloc.dart';
+import '../discount/discount_event.dart';
+import '../discount/discount_model.dart';
+import '../discount/discount_state.dart';
 
 class DiscountsPage extends StatelessWidget {
   final String userId;
@@ -40,12 +41,12 @@ class _UserDiscountsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discounts'),
+        title: Text('Discounts'.tr()),
         // Кнопка добавления в верхнем баре
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Add Discount',
+            tooltip: 'Add Discount'.tr(),
             onPressed: () => _showDiscountForm(context),
           ),
           const SizedBox(width: 8),
@@ -83,7 +84,7 @@ class _UserDiscountsView extends StatelessWidget {
                         context.read<DiscountsBloc>().add(FetchUserDiscountsEvent(userId));
                       },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text('Retry'.tr()),
                     ),
                   ],
                 ),
@@ -98,15 +99,15 @@ class _UserDiscountsView extends StatelessWidget {
                     children: [
                       const Icon(Icons.local_offer_outlined, size: 64, color: Colors.grey),
                       const SizedBox(height: 12),
-                      const Text(
-                        'No discounts found for this user.',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      Text(
+                        'No discounts found for this user.'.tr(),
+                        style: const TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () => _showDiscountForm(context),
                         icon: const Icon(Icons.add),
-                        label: const Text('Create First Discount'),
+                        label: Text('Create First Discount'.tr()),
                       ),
                     ],
                   ),
@@ -171,7 +172,7 @@ class _UserDiscountsView extends StatelessWidget {
                   ),
                   if (discount.productVariant.isNotEmpty)
                     Text(
-                      'Variant: ${discount.productVariant}',
+                      'variant_label'.tr(args: [discount.productVariant.toString()]),
                       style: const TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                 ],
@@ -251,15 +252,15 @@ class _UserDiscountsView extends StatelessWidget {
             bloc: productsBloc,
             builder: (context, productsState) {
               if (productsState is ManageProductsLoading || productsState is ManageProductsInitial) {
-                return const SizedBox(
+                return SizedBox(
                   height: 250,
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 12),
-                        Text('Loading products...'),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text('Loading products...'.tr()),
                       ],
                     ),
                   ),
@@ -273,11 +274,11 @@ class _UserDiscountsView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Failed to load products'),
+                        Text('Failed to load products'.tr()),
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () => productsBloc.add(GetProductsEvent()),
-                          child: const Text('Retry'),
+                          child: Text('Retry'.tr()),
                         ),
                       ],
                     ),
@@ -322,17 +323,17 @@ class _UserDiscountsView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isEditing ? 'Edit Discount' : 'Add New Discount',
+                            isEditing ? 'Edit Discount'.tr() : 'Add New Discount'.tr(),
                             style: Theme.of(sheetContext).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 16),
 
                           // 1. Select Product by ID
                           DropdownButtonFormField<String>(
-                            value: selectedProduct?.id,
-                            decoration: const InputDecoration(
-                              labelText: 'Select Product',
-                              border: OutlineInputBorder(),
+                            initialValue: selectedProduct?.id,
+                            decoration: InputDecoration(
+                              labelText: 'Select Product'.tr(),
+                              border: const OutlineInputBorder(),
                             ),
                             items: products.map((product) {
                               return DropdownMenuItem<String>(
@@ -349,16 +350,16 @@ class _UserDiscountsView extends StatelessWidget {
                                 selectedVariant = null;
                               });
                             },
-                            validator: (val) => val == null ? 'Please select a product' : null,
+                            validator: (val) => val == null ? 'Please select a product'.tr() : null,
                           ),
                           const SizedBox(height: 12),
 
                           // 2. Select Variant by ID (With Duplicate Check)
                           DropdownButtonFormField<String>(
-                            value: selectedVariant?.id,
-                            decoration: const InputDecoration(
-                              labelText: 'Select Variant',
-                              border: OutlineInputBorder(),
+                            initialValue: selectedVariant?.id,
+                            decoration: InputDecoration(
+                              labelText: 'Select Variant'.tr(),
+                              border: const OutlineInputBorder(),
                             ),
                             items: availableVariants.map((variant) {
                               return DropdownMenuItem<String>(
@@ -378,7 +379,7 @@ class _UserDiscountsView extends StatelessWidget {
                                 : null,
                             validator: (val) {
                               if (availableVariants.isNotEmpty && val == null) {
-                                return 'Please select a variant';
+                                return 'Please select a variant'.tr();
                               }
 
                               // DUPLICATE VALIDATION IN UI
@@ -395,7 +396,7 @@ class _UserDiscountsView extends StatelessWidget {
                                 );
 
                                 if (isDuplicate) {
-                                  return 'Discount for this variant already exists';
+                                  return 'Discount for this variant already exists'.tr();
                                 }
                               }
 
@@ -413,18 +414,18 @@ class _UserDiscountsView extends StatelessWidget {
                                 RegExp(r'^\d*\.?\d*'),
                               ),
                             ],
-                            decoration: const InputDecoration(
-                              labelText: 'Discount %',
-                              border: OutlineInputBorder(),
-                              suffixText: '%',
+                            decoration: InputDecoration(
+                              labelText: 'Discount %'.tr(),
+                              border: const OutlineInputBorder(),
+                              suffixText: '%'.tr(),
                             ),
                             validator: (val) {
                               if (val == null || val.trim().isEmpty) {
-                                return 'Enter discount %';
+                                return 'Enter discount %'.tr();
                               }
                               final numVal = double.tryParse(val);
                               if (numVal == null || numVal <= 0 || numVal > 100) {
-                                return 'Enter a valid percent (1-100)';
+                                return 'Enter a valid percent (1-100)'.tr();
                               }
                               return null;
                             },
@@ -460,7 +461,7 @@ class _UserDiscountsView extends StatelessWidget {
                                 }
                               },
                               child: Text(
-                                isEditing ? 'Save Changes' : 'Add Discount',
+                                isEditing ? 'Save Changes'.tr() : 'Add Discount'.tr(),
                               ),
                             ),
                           ),

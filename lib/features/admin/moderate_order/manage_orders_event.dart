@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/order_model.dart';
-import 'package:qde_eco_bahor/features/admin/moderate_order/presentation/manage_orders_page.dart';
+import 'package:qde_eco_bahor/features/admin/presentation/manage_orders_page.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/status_type.dart';
 
 abstract class ManageOrdersEvent extends Equatable {
