@@ -1,13 +1,36 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
+import 'package:qde_eco_bahor/features/auth/data/models/user_model.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../../../core/widgets/language_toggle.dart';
 import '../../../core/widgets/theme_toggle.dart';
 
-class HomePageAdmin extends StatelessWidget {
+class HomePageAdmin extends StatefulWidget {
   const HomePageAdmin({super.key});
+
+  @override
+  State<HomePageAdmin> createState() => _HomePageAdminState();
+}
+
+class _HomePageAdminState extends State<HomePageAdmin> {
+  late final UserModel? user;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticatedState) {
+      user = authState.user;
+    } else {
+      user = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,20 +73,22 @@ class HomePageAdmin extends StatelessWidget {
                 crossAxisSpacing: ThemeDimensions.paddingM,
                 childAspectRatio: 1.1,
                 children: [
-                  _AdminMenuCard(
-                    title: 'Add type'.tr(),
-                    subtitle: 'Category setup'.tr(),
-                    icon: Icons.category_outlined,
-                    color: isDark ? Colors.indigo.shade300 : Colors.indigo,
-                    onTap: () => context.push('/add_product_type'),
-                  ),
-                  _AdminMenuCard(
-                    title: 'Manage products'.tr(),
-                    subtitle: 'Edit & Delete'.tr(),
-                    icon: Icons.inventory_2_outlined,
-                    color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
-                    onTap: () => context.push('/manage_products'),
-                  ),
+                  if (user?.userType == UserType.accounting)
+                    _AdminMenuCard(
+                      title: 'Add type'.tr(),
+                      subtitle: 'Category setup'.tr(),
+                      icon: Icons.category_outlined,
+                      color: isDark ? Colors.indigo.shade300 : Colors.indigo,
+                      onTap: () => context.push('/add_product_type'),
+                    ),
+                  if (user?.userType == UserType.accounting)
+                    _AdminMenuCard(
+                      title: 'Manage products'.tr(),
+                      subtitle: 'Edit & Delete'.tr(),
+                      icon: Icons.inventory_2_outlined,
+                      color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
+                      onTap: () => context.push('/manage_products'),
+                    ),
                   _AdminMenuCard(
                     title: 'Manage orders'.tr(),
                     subtitle: 'Track status'.tr(),
@@ -71,14 +96,15 @@ class HomePageAdmin extends StatelessWidget {
                     color: isDark ? Colors.purple.shade300 : Colors.purple,
                     onTap: () => context.push('/manage_orders'),
                   ),
-                  _AdminMenuCard(
-                    title: 'Moderate Users'.tr(),
-                    subtitle: 'Review and verify accounts'.tr(),
-                    icon: Icons.admin_panel_settings_outlined,
-                    // Или Icons.how_to_reg_outlined
-                    color: isDark ? Colors.cyan.shade300 : Colors.cyan,
-                    onTap: () => context.push('/moderate_users'),
-                  ),
+                  if (user?.userType == UserType.accounting)
+                    _AdminMenuCard(
+                      title: 'Moderate Users'.tr(),
+                      subtitle: 'Review and verify accounts'.tr(),
+                      icon: Icons.admin_panel_settings_outlined,
+                      // Или Icons.how_to_reg_outlined
+                      color: isDark ? Colors.cyan.shade300 : Colors.cyan,
+                      onTap: () => context.push('/moderate_users'),
+                    ),
                 ],
               ),
             ],

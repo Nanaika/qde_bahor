@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/moderate_order/status_type.dart';
 
+import '../../auth/data/models/user_model.dart';
+import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/bloc/auth_state.dart';
 import '../moderate_order/manage_order_state.dart';
 import '../moderate_order/manage_orders_bloc.dart';
 import '../moderate_order/manage_orders_event.dart';
@@ -17,14 +20,23 @@ class ManageOrdersPage extends StatefulWidget {
 }
 
 class _ManageOrdersPageState extends State<ManageOrdersPage> {
+  late final UserModel? user;
   @override
   void initState() {
     super.initState();
     context.read<ManageOrdersBloc>().add(const SubscribeToManageOrdersEvent());
+
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticatedState) {
+      user = authState.user;
+    } else {
+      user = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isAccounting = user?.userType == UserType.accounting;
     return Scaffold(
       appBar: AppBar(
         title: Text('Orders'.tr()),
@@ -49,7 +61,10 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
               itemCount: state.orders.length,
               itemBuilder: (context, index) {
                 final order = state.orders[index];
-                return _OrderCard(order: order);
+                return _OrderCard(
+                  order: order,
+                  isAccounting: isAccounting,
+                );
               },
             );
           }
@@ -63,8 +78,8 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
 
 class _OrderCard extends StatelessWidget {
   final OrderModel order;
-
-  const _OrderCard({required this.order});
+  final bool isAccounting;
+  const _OrderCard({required this.order, required this.isAccounting});
 
   @override
   Widget build(BuildContext context) {
@@ -289,13 +304,15 @@ class _OrderCard extends StatelessWidget {
             const Divider(height: 16),
             GestureDetector(
               onTap: () {
-                showStatusPickerBottomSheet(
-                  context,
-                  title: 'Select status'.tr(),
-                  currentStatus: order.warehouseStatus,
-                  id: order.id,
-                  statusType: StatusType.storage,
-                );
+                if (!isAccounting) {
+                  showStatusPickerBottomSheet(
+                    context,
+                    title: 'Select status'.tr(),
+                    currentStatus: order.warehouseStatus,
+                    id: order.id,
+                    statusType: StatusType.storage,
+                  );
+                }
               },
               child: Container(
                 decoration: const BoxDecoration(color: Colors.transparent),
@@ -334,13 +351,15 @@ class _OrderCard extends StatelessWidget {
             const Divider(height: 16),
             GestureDetector(
               onTap: () {
-                showStatusPickerBottomSheet(
-                  context,
-                  title: 'Select status'.tr(),
-                  currentStatus: order.accountingStatus,
-                  id: order.id,
-                  statusType: StatusType.accounting,
-                );
+                if (isAccounting) {
+                  showStatusPickerBottomSheet(
+                    context,
+                    title: 'Select status'.tr(),
+                    currentStatus: order.accountingStatus,
+                    id: order.id,
+                    statusType: StatusType.accounting,
+                  );
+                }
               },
               child: Container(
                 decoration: const BoxDecoration(color: Colors.transparent),
@@ -378,14 +397,16 @@ class _OrderCard extends StatelessWidget {
             const Divider(height: 16),
             GestureDetector(
               onTap: () {
-                showDriverStatusPickerBottomSheet(
-                  context,
-                  title: 'Select status'.tr(),
-                  currentStatus: order.driverStatus,
-                  id: order.id,
-                  warehouseStatus: order.warehouseStatus,
-                  accountingStatus: order.accountingStatus,
-                );
+                if (!isAccounting) {
+                  showDriverStatusPickerBottomSheet(
+                    context,
+                    title: 'Select status'.tr(),
+                    currentStatus: order.driverStatus,
+                    id: order.id,
+                    warehouseStatus: order.warehouseStatus,
+                    accountingStatus: order.accountingStatus,
+                  );
+                }
               },
               child: Container(
                 decoration: const BoxDecoration(color: Colors.transparent),
