@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qde_eco_bahor/core/di/injection_container.dart';
 import 'package:qde_eco_bahor/features/admin/discount/discount_model.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 import 'package:qde_eco_bahor/features/admin/restriction/restricted_product_model.dart';

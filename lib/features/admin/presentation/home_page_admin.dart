@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
 
+import '../../../core/widgets/language_toggle.dart';
+import '../../../core/widgets/theme_toggle.dart';
+
 class HomePageAdmin extends StatelessWidget {
   const HomePageAdmin({super.key});
 
@@ -17,6 +20,10 @@ class HomePageAdmin extends StatelessWidget {
           'Admin Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        actions: const [
+          LanguageToggle(),
+          ThemeToggle(),
+        ],
         elevation: 0,
         centerTitle: false,
       ),

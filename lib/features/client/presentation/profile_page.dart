@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/widgets/language_toggle.dart';
+import '../../../core/widgets/theme_toggle.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../auth/presentation/bloc/auth_event.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
@@ -104,6 +106,10 @@ class _ProfilePageState extends State<ProfilePage> {
           'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        actions: const [
+          LanguageToggle(),
+          ThemeToggle(),
+        ],
         automaticallyImplyLeading: false,
         elevation: 0,
       ),
