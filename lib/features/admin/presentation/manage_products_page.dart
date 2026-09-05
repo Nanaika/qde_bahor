@@ -278,7 +278,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                 );
                               }).toList(),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             Row(

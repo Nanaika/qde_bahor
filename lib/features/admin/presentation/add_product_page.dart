@@ -650,7 +650,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                     Expanded(
                       child: TextFormField(
                         controller: _netWeightController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: _dialogInputDecoration('Netto (kg)'),
                         validator: (v) => v == null || v.isEmpty ? 'Enter netto' : null,
                       ),
@@ -659,7 +659,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                     Expanded(
                       child: TextFormField(
                         controller: _grossWeightController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: _dialogInputDecoration('Brutto (kg)'),
                         validator: (v) => v == null || v.isEmpty ? 'Enter brutto' : null,
                       ),
@@ -674,7 +674,7 @@ class _VariantEditBottomSheetState extends State<VariantEditBottomSheet> {
                     Expanded(
                       child: TextFormField(
                         controller: _valueController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: _dialogInputDecoration('Vol / Qty'),
                         validator: (v) => v == null || v.isEmpty ? 'Specify volume' : null,
                       ),
