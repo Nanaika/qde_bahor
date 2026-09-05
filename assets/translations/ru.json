@@ -75,7 +75,7 @@
   "Weight (Gross / Net)": "Вес (Брутто / Нетто)",
   "Products: ": "Товары: ",
   "order_number_title": "Заказ #{id}",
-  "You don\\'t have any orders yet": "У вас пока нет заказов",
+  "You do not have any orders yet": "У вас пока нет заказов",
   "My Orders": "Мои заказы",
   "User is no authorized": "Пользователь не авторизован",
   "Add to Cart": "В корзину",

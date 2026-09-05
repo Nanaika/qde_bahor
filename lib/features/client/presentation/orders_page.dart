@@ -36,7 +36,7 @@ class OrdersPage extends StatelessWidget {
       create: (context) => ClientOrdersBloc()..add(SubscribeToClientOrdersEvent(userId!)),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('My Orders'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('My Orders'.tr(context: context), style: const TextStyle(fontWeight: FontWeight.bold)),
           automaticallyImplyLeading: false,
           elevation: 0,
         ),
@@ -65,7 +65,7 @@ class OrdersPage extends StatelessWidget {
               if (state.orders.isEmpty) {
                 return Center(
                   child: Text(
-                    'You don\'t have any orders yet'.tr(),
+                    'You do not have any orders yet'.tr(),
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 );

@@ -46,7 +46,10 @@ class _HomePageAdminState extends State<HomePageAdmin> {
         ),
         actions: const [
           LanguageToggle(),
-          ThemeToggle(),
+          Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: ThemeToggle(),
+          ),
         ],
         elevation: 0,
         centerTitle: false,
