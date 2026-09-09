@@ -8,6 +8,7 @@ import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../../admin/discount/discount_model.dart';
 import '../../client/presentation/client_home_page.dart';
+import '../../client/presentation/products_page.dart';
 import '../cart_bloc.dart';
 
 class CartScreen extends StatefulWidget {
