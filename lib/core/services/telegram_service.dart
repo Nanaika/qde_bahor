@@ -10,6 +10,8 @@ extension type _WebAppJS._(JSObject _) implements JSObject {
 
   external void ready();
 
+  external void disableVerticalSwipes();
+
   external _InitDataUnsafeJS? get initDataUnsafe;
 
   external JSString? get initData;
@@ -36,6 +38,7 @@ class TelegramService {
     try {
       _webApp?.expand();
       _webApp?.ready();
+      _webApp?.disableVerticalSwipes();
     } catch (_) {}
   }
 

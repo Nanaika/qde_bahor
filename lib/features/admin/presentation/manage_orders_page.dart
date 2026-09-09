@@ -7,6 +7,7 @@ import 'package:qde_eco_bahor/features/admin/moderate_order/status_type.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
+import '../../client/presentation/products_page.dart';
 import '../moderate_order/manage_order_state.dart';
 import '../moderate_order/manage_orders_bloc.dart';
 import '../moderate_order/manage_orders_event.dart';
@@ -198,7 +199,7 @@ class _OrderCard extends StatelessWidget {
                                 const SizedBox(width: 12),
                                 Text(
                                   'item_total_price'.tr(namedArgs: {
-                                    'price': item.totalPrice.toString(),
+                                    'price': formatNumber(item.totalPrice).toString(),
                                   }),
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
@@ -274,7 +275,7 @@ class _OrderCard extends StatelessWidget {
                           if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
                             Text(
                               'order_total_price'.tr(namedArgs: {
-                                'price': order.totalPrice.toString(),
+                                'price': formatNumber(order.totalPrice).toString(),
                               }),
                               style: TextStyle(
                                   fontSize: 13,
@@ -285,7 +286,9 @@ class _OrderCard extends StatelessWidget {
                           ],
                           Text(
                             'order_final_price'.tr(namedArgs: {
-                              'price': (order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice)
+                              'price': (order.totalDiscountPrice > 0
+                                      ? formatNumber(order.totalDiscountPrice)
+                                      : formatNumber(order.totalPrice))
                                   .toString(),
                             }),
                             style: const TextStyle(

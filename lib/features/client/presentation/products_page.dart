@@ -79,6 +79,11 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
     return Scaffold(
       // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        forceMaterialTransparency: true,
         centerTitle: false,
         actions: [
           IconButton(
@@ -92,7 +97,6 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
           'Products'.tr(),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        elevation: 0,
       ),
       body: Column(
         children: [
