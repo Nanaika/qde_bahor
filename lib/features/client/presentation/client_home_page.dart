@@ -36,10 +36,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         bool isModerated = false;
 
         if (state is AuthAuthenticatedState) {
-          isModerated = state.user.isModerated; // Поле модерации в твоей UserModel
+          isModerated = state.user.isModerated;
         }
 
-        // Если не модерирован — жестко держим на 3-й странице (ProfilePage)
         final activeIndex = isModerated ? _currentIndex : 2;
 
         return Scaffold(
@@ -561,7 +560,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
     }
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -581,6 +580,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -606,14 +606,28 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    product.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        product.description,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
               ],

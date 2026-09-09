@@ -1,4 +1,3 @@
-// 1. Страница каталога товаров
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -139,6 +138,7 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
             ),
           if (_types.isNotEmpty)
             TabBar(
+              splashFactory: NoSplash.splashFactory,
               controller: _tabController,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
@@ -165,17 +165,21 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
                 if (state is ManageProductsSuccess) {
                   final allProducts = state.products;
 
-                  return TabBarView(
-                    controller: _tabController,
-                    children: _types.map((category) {
-                      final categoryProducts = allProducts.where((p) => p.productType.id == category.id).toList();
+                  // Предварительно создаем список всех вкладок,
+                  // IndexedStack смонтирует их ВСЕ сразу при первом открытии
+                  final prebuiltTabs = _types.map((category) {
+                    final categoryProducts = allProducts.where((p) => p.productType.id == category.id).toList();
 
-                      return CategoryProductGrid(
-                        key: PageStorageKey('category_${category.id}'),
-                        searchController: _searchControllers[category.id]!,
-                        products: categoryProducts,
-                      );
-                    }).toList(),
+                    return CategoryProductGrid(
+                      key: PageStorageKey('category_${category.id}'),
+                      searchController: _searchControllers[category.id]!,
+                      products: categoryProducts,
+                    );
+                  }).toList();
+
+                  return IndexedStack(
+                    index: _tabController.index,
+                    children: prebuiltTabs,
                   );
                 }
 
