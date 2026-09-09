@@ -1,8 +1,6 @@
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_type_model.dart';
 
-import '../models/product_variant.dart';
-
 abstract class ManageProductsEvent {}
 
 class GetProductsEvent extends ManageProductsEvent {}

@@ -170,10 +170,15 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
                   final prebuiltTabs = _types.map((category) {
                     final categoryProducts = allProducts.where((p) => p.productType.id == category.id).toList();
 
-                    return CategoryProductGrid(
-                      key: PageStorageKey('category_${category.id}'),
-                      searchController: _searchControllers[category.id]!,
-                      products: categoryProducts,
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<ManageProductsBloc>().add(GetProductsEvent());
+                      },
+                      child: CategoryProductGrid(
+                        key: PageStorageKey('category_${category.id}'),
+                        searchController: _searchControllers[category.id]!,
+                        products: categoryProducts,
+                      ),
                     );
                   }).toList();
 
