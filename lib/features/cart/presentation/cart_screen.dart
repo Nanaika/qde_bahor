@@ -68,7 +68,6 @@ class _CartScreenState extends State<CartScreen> {
             );
           }
 
-          // Расчет итоговой суммы со скидкой и независимый пересчет бонусов по вариантам
           double totalPriceWithDiscount = 0;
           int totalBonusCount = 0;
           int totalPaidCount = 0;
@@ -86,7 +85,6 @@ class _CartScreenState extends State<CartScreen> {
             totalPriceWithDiscount += finalPrice * item.quantity;
             totalPaidCount += item.quantity;
 
-            // Расчет бонусов по аналогии со шторкой
             final buyQty = item.variant.buyQuantity ?? 0;
             final freeQty = item.variant.freeQuantity ?? 0;
             if (buyQty > 0 && freeQty > 0) {

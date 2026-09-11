@@ -16,7 +16,6 @@ import '../../admin/restriction/restricted_product_model.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
 import '../../cart/cart_bloc.dart';
-import 'client_home_page.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -28,6 +27,7 @@ class ProductsPage extends StatefulWidget {
 class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final List<ProductTypeModel> _types;
+  late final PageController _pageController;
 
   final Map<String, TextEditingController> _searchControllers = {};
 
@@ -42,10 +42,11 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
     } else {
       _types = [];
     }
-
+    _pageController = PageController();
     _tabController = TabController(
       length: _types.length,
       vsync: this,
+      animationDuration: const Duration(milliseconds: 150),
     );
 
     for (final type in _types) {
@@ -53,8 +54,12 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
     }
 
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {});
+      if (_tabController.index != _pageController.page?.round()) {
+        _pageController.animateToPage(
+          _tabController.index,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -62,6 +67,7 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
   @override
   void dispose() {
     _tabController.dispose();
+    _pageController.dispose();
     for (var controller in _searchControllers.values) {
       controller.dispose();
     }
@@ -75,7 +81,11 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
     final activeSearchController =
         currentCategory != null ? _searchControllers[currentCategory.id]! : TextEditingController();
     final theme = Theme.of(context);
-
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (_pageController.hasClients) {
+    //     _pageController.jumpToPage(_tabController.index);
+    //   }
+    // });
     return Scaffold(
       // backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -154,7 +164,6 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
               isScrollable: true,
               tabAlignment: TabAlignment.start,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              // labelColor: theme.primaryColor,
               unselectedLabelColor: Colors.grey.shade600.withValues(alpha: 0.5),
               labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
@@ -165,7 +174,6 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
                 return Tab(text: cat.getName(currentLang));
               }).toList(),
             ),
-          // Divider(height: 1, color: Colors.grey.shade200),
           Expanded(
             child: BlocBuilder<ManageProductsBloc, ManageProductsState>(
               builder: (context, state) {
@@ -175,27 +183,26 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
 
                 if (state is ManageProductsSuccess) {
                   final allProducts = state.products;
+                  return PageView(
+                    key: const PageStorageKey('my_stable_page_view'),
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      _tabController.animateTo(index);
+                    },
+                    children: _types.map((category) {
+                      final categoryProducts = allProducts.where((p) => p.productType.id == category.id).toList();
 
-                  // Предварительно создаем список всех вкладок,
-                  // IndexedStack смонтирует их ВСЕ сразу при первом открытии
-                  final prebuiltTabs = _types.map((category) {
-                    final categoryProducts = allProducts.where((p) => p.productType.id == category.id).toList();
-
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<ManageProductsBloc>().add(GetProductsEvent());
-                      },
-                      child: CategoryProductGrid(
-                        key: PageStorageKey('category_${category.id}'),
-                        searchController: _searchControllers[category.id]!,
-                        products: categoryProducts,
-                      ),
-                    );
-                  }).toList();
-
-                  return IndexedStack(
-                    index: _tabController.index,
-                    children: prebuiltTabs,
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<ManageProductsBloc>().add(GetProductsEvent());
+                        },
+                        child: CategoryProductGrid(
+                          key: PageStorageKey('category_${category.id}'),
+                          searchController: _searchControllers[category.id]!,
+                          products: categoryProducts,
+                        ),
+                      );
+                    }).toList(),
                   );
                 }
 
@@ -329,14 +336,13 @@ class _ProductGridCardState extends State<ProductGridCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Проверка наличия акции (купи N, получи M)
     final hasPromo = widget.product.variants.any(
-      (v) => (v.buyQuantity ?? 0) > 0 && (v.freeQuantity ?? 0) > 0,
+      (v) => (v.buyQuantity) > 0 && (v.freeQuantity) > 0,
     );
 
     double minPrice = 0;
     if (widget.product.variants.isNotEmpty) {
-      final prices = widget.product.variants.map((v) => v.price ?? 0.0).where((p) => p > 0).toList();
+      final prices = widget.product.variants.map((v) => v.price).where((p) => p > 0).toList();
       if (prices.isNotEmpty) {
         minPrice = prices.reduce((a, b) => a < b ? a : b);
       }
@@ -592,21 +598,20 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
 
     double totalPrice = 0;
     int totalCount = 0;
-    int totalBonusCount = 0; // Добавлено для бонусов
+    int totalBonusCount = 0;
     double totalPriceWithDiscount = 0;
 
     for (var variant in product.variants) {
       final qty = _selectedQuantities[variant.id] ?? 0;
       if (qty == 0) continue;
 
-      final basePrice = variant.price ?? 0;
+      final basePrice = variant.price;
 
       totalPrice += basePrice * qty;
       totalCount += qty;
 
-      // Расчет бонусов по варианту
-      final buyQty = variant.buyQuantity ?? 0;
-      final freeQty = variant.freeQuantity ?? 0;
+      final buyQty = variant.buyQuantity;
+      final freeQty = variant.freeQuantity;
       if (buyQty > 0 && freeQty > 0) {
         totalBonusCount += (qty ~/ buyQty) * freeQty;
       }
@@ -705,7 +710,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
               itemBuilder: (context, index) {
                 final variant = product.variants[index];
                 final count = _selectedQuantities[variant.id] ?? 0;
-                final variantPrice = variant.price ?? 0;
+                final variantPrice = variant.price;
                 final isSelected = count > 0;
 
                 return AnimatedContainer(
@@ -742,7 +747,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if ((variant.buyQuantity ?? 0) > 0 && (variant.freeQuantity ?? 0) > 0) ...[
+                            if ((variant.buyQuantity) > 0 && (variant.freeQuantity) > 0) ...[
                               const SizedBox(height: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -907,8 +912,8 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                                     );
 
                                     // Считаем бонус индивидуально для текущего варианта:
-                                    final buyQty = variant.buyQuantity ?? 0;
-                                    final freeQty = variant.freeQuantity ?? 0;
+                                    final buyQty = variant.buyQuantity;
+                                    final freeQty = variant.freeQuantity;
 
                                     int variantBonus = 0;
                                     if (buyQty > 0 && freeQty > 0) {
