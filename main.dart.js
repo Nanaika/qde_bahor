@@ -57380,7 +57380,7 @@ e.delete()}}}
 A.FS.prototype={
 MG(a){var s=a?1:0,r=this.CW.x
 r===$&&A.a()
-return new A.rN(s,A.n7(B.acS,r-s,0),!0,B.aiy)},
+return new A.rN(s,A.n7(B.acT,r-s,0),!0,B.aiy)},
 ng(a,b,c,d){var s
 if(b.gbj()===B.bV)return new A.cY(b,!1,d,null)
 s=$.bco()
@@ -115044,7 +115044,7 @@ r.toString
 q=s*r
 r=a.at
 r.toString
-return new A.oD(q,A.n7(B.acT,r-q,b*1.5),!1,p)}return this.a9D(a,b)},
+return new A.oD(q,A.n7(B.acS,r-q,b*5),!1,p)}return this.a9D(a,b)},
 ajk(a,b){var s,r,q=a.at
 q.toString
 s=a.ax
@@ -122927,8 +122927,8 @@ B.acN=new A.L3(1,"normal")
 B.acO=new A.L3(2,"forced")
 B.acR=new A.a2A(null)
 B.ir=new A.L4(null,null,null,null,!1)
-B.acS=new A.L7(1,522.35,45.7099552)
-B.acT=new A.L7(0.2,1200,1)
+B.acS=new A.L7(1,1200,1)
+B.acT=new A.L7(1,522.35,45.7099552)
 B.acU=new A.L8(0,"criticallyDamped")
 B.acV=new A.L8(1,"underDamped")
 B.acW=new A.L8(2,"overDamped")
