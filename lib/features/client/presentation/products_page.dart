@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/di/injection_container.dart';
+import '../../../core/utils/format_numbers.dart';
 import '../../admin/discount/discount_model.dart';
 import '../../admin/manage_products/manage_products_bloc.dart';
 import '../../admin/manage_products/manage_products_event.dart';
@@ -504,7 +505,7 @@ class _ProductGridCardState extends State<ProductGridCard> {
                                 ),
                                 Text(
                                   'min_price_formatted'.tr(namedArgs: {
-                                    'price': minPrice.toStringAsFixed(0),
+                                    'price': formatNumber(minPrice.round()),
                                   }),
                                   style: const TextStyle(
                                     fontSize: 13,
@@ -740,7 +741,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                             const SizedBox(height: 4),
                             Text(
                               'variant_price_sum'.tr(namedArgs: {
-                                'price': variantPrice.toString(),
+                                'price': formatNumber(variantPrice).toString(),
                               }),
                               style: const TextStyle(
                                 fontSize: 14,
@@ -1058,23 +1059,4 @@ class _QuantityCounterState extends State<_QuantityCounter> {
       ),
     );
   }
-}
-
-String formatNumber(num number) {
-  // Округляем до 1 знака после запятой
-  final formatted = number.toStringAsFixed(1);
-  final parts = formatted.split('.');
-
-  // Форматируем целую часть пробелами
-  parts[0] = parts[0].replaceAllMapped(
-    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (Match m) => '${m[1]} ',
-  );
-
-  // Если дробная часть '.0', убираем её
-  if (parts.length > 1 && parts[1] == '0') {
-    return parts[0];
-  }
-
-  return parts.join('.');
 }

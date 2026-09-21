@@ -6,6 +6,7 @@ import 'package:qde_eco_bahor/features/admin/moderate_order/order_model.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
+import '../../../core/utils/format_numbers.dart';
 import '../../admin/discount/discount_model.dart';
 import '../../client/presentation/client_home_page.dart';
 import '../../client/presentation/products_page.dart';

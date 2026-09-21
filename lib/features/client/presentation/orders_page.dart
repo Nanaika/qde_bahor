@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/core/utils/format_numbers.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
@@ -118,13 +119,12 @@ class _OrderItemTile extends StatelessWidget {
 
       // Текст названия товара с бонусом
       if (itemBonus > 0) {
-        productNamesList.add('${item.product.name} (${item.variant.name}) x${item.quantity} + $itemBonus free');
+        productNamesList.add('${item.product.name}\n(${item.variant.name}) x${item.quantity} + $itemBonus free');
       } else {
-        productNamesList.add('${item.product.name} (${item.variant.name}) x${item.quantity}');
+        productNamesList.add('${item.product.name}\n(${item.variant.name}) x${item.quantity}');
       }
     }
 
-    final productNames = productNamesList.join(', ');
     final finalPrice = order.totalDiscountPrice > 0 ? order.totalDiscountPrice : order.totalPrice;
     return Card(
       elevation: 0,
@@ -138,14 +138,14 @@ class _OrderItemTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Номер заказа
-            Text(
-              'order_number_title'.tr(namedArgs: {
-                'id': order.id.toString(),
-              }),
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            // Text(
+            //   'order_number_title'.tr(namedArgs: {
+            //     'id': order.id.toString(),
+            //   }),
+            //   style: theme.textTheme.titleMedium?.copyWith(
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
             const SizedBox(height: 12),
             const Divider(height: 1, thickness: 0.5),
             const SizedBox(height: 12),
@@ -163,8 +163,54 @@ class _OrderItemTile extends StatelessWidget {
                   ),
                 ),
                 Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: productNamesList.isEmpty
+                        ? [
+                            Text(
+                              'No products'.tr(),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ]
+                        : productNamesList.map((name) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Text(
+                                name,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: 12),
+
+            // 3. Вес (Брутто / Нетто)
+            Column(
+              children: [
+                Align(
+                  alignment: Alignment.bottomLeft,
                   child: Text(
-                    productNames.isEmpty ? 'No products'.tr() : productNames,
+                    'Weight (Gross / Net)'.tr(),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Text(
+                    '${totalGross.toStringAsFixed(1)} кг / ${totalNet.toStringAsFixed(1)} кг',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -174,50 +220,34 @@ class _OrderItemTile extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // 3. Вес (Брутто / Нетто)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Weight (Gross / Net)'.tr(),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  '${totalGross.toStringAsFixed(1)} кг / ${totalNet.toStringAsFixed(1)} кг',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
             // 4. Информация о количестве (Оплачено / Бонусы / Всего)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
-                Text(
-                  'Quantity (Paid + Bonus)'.tr(),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 14,
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    'Quantity (Paid + Bonus)'.tr(),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-                Text(
-                  order.totalBonusCount > 0
-                      ? 'order_quantity_details'.tr(namedArgs: {
-                          'paidCount': order.totalPaidCount.toString(),
-                          'bonusCount': order.totalBonusCount.toString(),
-                          'totalCount': order.totalQuantityCount.toString(),
-                        })
-                      : 'order_quantity_single'.tr(namedArgs: {
-                          'paidCount': order.totalPaidCount.toString(),
-                        }),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Text(
+                    order.totalBonusCount > 0
+                        ? 'order_quantity_details'.tr(namedArgs: {
+                            'paidCount': order.totalPaidCount.toString(),
+                            'bonusCount': order.totalBonusCount.toString(),
+                            'totalCount': order.totalQuantityCount.toString(),
+                          })
+                        : 'order_quantity_single'.tr(namedArgs: {
+                            'paidCount': order.totalPaidCount.toString(),
+                          }),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -226,45 +256,49 @@ class _OrderItemTile extends StatelessWidget {
 
             // 5. Общая сумма
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
               children: [
-                Text(
-                  'Total'.tr(),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 14,
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    'Total'.tr(),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (order.totalDiscountPrice > 0 && order.totalDiscountPrice < order.totalPrice) ...[
+                        Text(
+                          'order_total_price_sum'.tr(namedArgs: {
+                            'price': formatNumber(order.totalPrice).toString(),
+                          }),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       Text(
-                        'order_total_price_sum'.tr(namedArgs: {
-                          'price': order.totalPrice.toString(),
+                        'order_final_price_sum'.tr(namedArgs: {
+                          'price': formatNumber(finalPrice).toString(),
                         }),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade600,
-                          decoration: TextDecoration.lineThrough,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                          fontSize: 18,
                         ),
                       ),
-                      const SizedBox(width: 8),
                     ],
-                    Text(
-                      'order_final_price_sum'.tr(namedArgs: {
-                        'price': finalPrice.toString(),
-                      }),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
