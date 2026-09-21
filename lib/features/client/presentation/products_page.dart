@@ -836,7 +836,7 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                             children: [
                               Text(
                                 'selected_items_count'.tr(namedArgs: {
-                                  'count': totalCount.toString(),
+                                  'count': formatCountNumber(totalCount).toString(),
                                 }),
                                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                               ),

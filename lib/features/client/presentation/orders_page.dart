@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/core/utils/format_numbers.dart';
@@ -119,9 +118,10 @@ class _OrderItemTile extends StatelessWidget {
 
       // Текст названия товара с бонусом
       if (itemBonus > 0) {
-        productNamesList.add('${item.product.name}\n(${item.variant.name}) x${item.quantity} + $itemBonus free');
+        productNamesList.add(
+            '${item.product.name}\n(${item.variant.name}) x ${formatCountNumber(item.quantity)} + ${formatCountNumber(itemBonus)} free');
       } else {
-        productNamesList.add('${item.product.name}\n(${item.variant.name}) x${item.quantity}');
+        productNamesList.add('${item.product.name}\n(${item.variant.name}) x${formatCountNumber(item.quantity)}');
       }
     }
 
@@ -210,7 +210,7 @@ class _OrderItemTile extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomRight,
                   child: Text(
-                    '${totalGross.toStringAsFixed(1)} кг / ${totalNet.toStringAsFixed(1)} кг',
+                    '${formatWeightNumber(totalGross)} кг / ${formatWeightNumber(totalNet)} кг',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -238,12 +238,12 @@ class _OrderItemTile extends StatelessWidget {
                   child: Text(
                     order.totalBonusCount > 0
                         ? 'order_quantity_details'.tr(namedArgs: {
-                            'paidCount': order.totalPaidCount.toString(),
-                            'bonusCount': order.totalBonusCount.toString(),
-                            'totalCount': order.totalQuantityCount.toString(),
+                            'paidCount': formatCountNumber(order.totalPaidCount).toString(),
+                            'bonusCount': formatCountNumber(order.totalBonusCount).toString(),
+                            'totalCount': formatCountNumber(order.totalQuantityCount).toString(),
                           })
                         : 'order_quantity_single'.tr(namedArgs: {
-                            'paidCount': order.totalPaidCount.toString(),
+                            'paidCount': formatCountNumber(order.totalPaidCount).toString(),
                           }),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,

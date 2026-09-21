@@ -8,7 +8,6 @@ import '../../../core/utils/format_numbers.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../auth/presentation/bloc/auth_state.dart';
-import '../../client/presentation/products_page.dart';
 import '../moderate_order/manage_order_state.dart';
 import '../moderate_order/manage_orders_bloc.dart';
 import '../moderate_order/manage_orders_event.dart';
@@ -23,6 +22,7 @@ class ManageOrdersPage extends StatefulWidget {
 
 class _ManageOrdersPageState extends State<ManageOrdersPage> {
   late final UserModel? user;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +81,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
 class _OrderCard extends StatelessWidget {
   final OrderModel order;
   final bool isAccounting;
+
   const _OrderCard({required this.order, required this.isAccounting});
 
   @override
@@ -178,33 +179,36 @@ class _OrderCard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               'netto_brutto_summary'.tr(namedArgs: {
-                                'netto': itemNetto.toString(),
-                                'brutto': itemBrutto.toString(),
+                                'netto': formatWeightNumber(itemNetto).toString(),
+                                'brutto': formatWeightNumber(itemBrutto).toString(),
                               }),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.outline,
                               ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(itemBonus > 0
-                                    ? 'item_quantity_bonus'.tr(namedArgs: {
-                                        'quantity': item.quantity.toString(),
-                                        'bonus': itemBonus.toString(),
-                                      })
-                                    : 'item_quantity_normal'.tr(namedArgs: {
-                                        'quantity': item.quantity.toString(),
-                                      })),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'item_total_price'.tr(namedArgs: {
-                                    'price': formatNumber(item.totalPrice).toString(),
-                                  }),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(itemBonus > 0
+                                      ? 'item_quantity_bonus'.tr(namedArgs: {
+                                          'quantity': formatCountNumber(item.quantity).toString(),
+                                          'bonus': formatCountNumber(itemBonus).toString(),
+                                        })
+                                      : 'item_quantity_normal'.tr(namedArgs: {
+                                          'quantity': formatCountNumber(item.quantity).toString(),
+                                        })),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'item_total_price'.tr(namedArgs: {
+                                      'price': formatNumber(item.totalPrice).toString(),
+                                    }),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -239,8 +243,8 @@ class _OrderCard extends StatelessWidget {
                         child: Text(
                           textAlign: TextAlign.end,
                           'order_total_weights'.tr(namedArgs: {
-                            'netto': netto.toStringAsFixed(2),
-                            'brutto': brutto.toStringAsFixed(2),
+                            'netto': formatWeightNumber(netto),
+                            'brutto': formatWeightNumber(brutto),
                           }),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,

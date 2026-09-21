@@ -183,11 +183,11 @@ class _CartScreenState extends State<CartScreen> {
                                         child: Text(
                                           itemBonusQuantity > 0
                                               ? 'item_qty_with_bonus'.tr(namedArgs: {
-                                                  'quantity': item.quantity.toString(),
-                                                  'bonus': itemBonusQuantity.toString(),
+                                                  'quantity': formatCountNumber(item.quantity).toString(),
+                                                  'bonus': formatCountNumber(itemBonusQuantity).toString(),
                                                 })
                                               : 'item_qty_standard'.tr(namedArgs: {
-                                                  'quantity': item.quantity.toString(),
+                                                  'quantity': formatCountNumber(item.quantity).toString(),
                                                 }),
                                           style: TextStyle(
                                             fontSize: 11,
@@ -295,7 +295,7 @@ class _CartScreenState extends State<CartScreen> {
                                             ),
                                             child: Text(
                                               'order_total_paid_count'.tr(namedArgs: {
-                                                'count': totalPaidCount.toString(),
+                                                'count': formatCountNumber(totalPaidCount).toString(),
                                               }),
                                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                             ),
@@ -311,7 +311,7 @@ class _CartScreenState extends State<CartScreen> {
                                               ),
                                               child: Text(
                                                 'order_total_bonus_count'.tr(namedArgs: {
-                                                  'bonus': totalBonusCount.toString(),
+                                                  'bonus': formatCountNumber(totalBonusCount).toString(),
                                                 }),
                                                 style: TextStyle(
                                                   fontSize: 11,
