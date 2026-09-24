@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../../auth/data/models/user_model.dart';
 import '../moderate_users/users_bloc.dart';
@@ -227,6 +229,20 @@ class _UsersViewState extends State<_UsersView> {
                                               );
                                         } else if (value == 'change_role') {
                                           _showRoleDialog(context, user);
+                                        } else {
+                                          //todo
+                                          DeleteUserDialog.show(context, onDelete: () {
+                                            if (user.id ==
+                                                (context.read<AuthBloc>().state as AuthAuthenticatedState).user.id) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('cannot_delete_yourself'.tr()),
+                                                ),
+                                              );
+                                              return;
+                                            }
+                                            context.read<UsersBloc>().add(DeleteUserEvent(userId: user.id));
+                                          });
                                         }
                                       },
                                       itemBuilder: (context) => [
@@ -253,6 +269,23 @@ class _UsersViewState extends State<_UsersView> {
                                               const Icon(Icons.manage_accounts_outlined, size: 20),
                                               const SizedBox(width: 8),
                                               Text('Change Role'.tr()),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.delete_forever,
+                                                size: 20,
+                                                color: Colors.red,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Delete'.tr(),
+                                                style: const TextStyle(color: Colors.red),
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -507,6 +540,60 @@ class _UsersViewState extends State<_UsersView> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class DeleteUserDialog extends StatelessWidget {
+  final VoidCallback onDelete;
+
+  const DeleteUserDialog({
+    super.key,
+    required this.onDelete,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    required VoidCallback onDelete,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (_) => DeleteUserDialog(
+        onDelete: onDelete,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(
+        Icons.warning_rounded,
+        color: Colors.red,
+        size: 48,
+      ),
+      title: Text('delete_user'.tr()),
+      content: Text(
+        '${'delete_user_description'.tr()}\n${'delete_user_warning'.tr()}',
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.red),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('cancel'.tr()),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            onDelete();
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.red,
+          ),
+          child: Text('delete'.tr()),
+        ),
+      ],
     );
   }
 }

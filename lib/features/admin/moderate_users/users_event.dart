@@ -26,6 +26,17 @@ class UpdateUserRoleEvent extends UsersEvent {
   List<Object?> get props => [userId, userType];
 }
 
+class DeleteUserEvent extends UsersEvent {
+  final String userId;
+
+  const DeleteUserEvent({
+    required this.userId,
+  });
+
+  @override
+  List<Object?> get props => [userId];
+}
+
 class UpdateUserModerationEvent extends UsersEvent {
   final String userId;
   final bool isModerated;

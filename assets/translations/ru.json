@@ -1,6 +1,12 @@
 {
+  "delete_user": "Удалить пользователя?",
+  "delete_user_description": "Пользователь и все связанные с ним данные будут удалены.",
+  "delete_user_warning": "Это действие нельзя отменить.",
+  "cancel": "Отмена",
+  "delete": "Удалить",
   "English": "English",
   "Russian": "Русский",
+  "cannot_delete_yourself": "Нельзя удалить себя",
   "Uzbek": "O'zbek",
   "Select language": "Выберите язык",
   "Add type": "Добавить тип",

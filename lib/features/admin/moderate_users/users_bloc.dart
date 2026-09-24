@@ -15,6 +15,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     on<FetchAllUsersEvent>(_onFetchAllUsers);
     on<UpdateUserRoleEvent>(_onUpdateUserRole);
     on<UpdateUserModerationEvent>(_onUpdateUserModeration);
+    on<DeleteUserEvent>(_onDeleteUser);
   }
 
   Future<void> _onFetchAllUsers(
@@ -30,6 +31,63 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
       emit(UsersLoadedState(users));
     } catch (e) {
       emit(UsersErrorState(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteUser(
+    DeleteUserEvent event,
+    Emitter<UsersState> emit,
+  ) async {
+    if (state is! UsersLoadedState) return;
+
+    final currentState = state as UsersLoadedState;
+
+    emit(
+      UsersLoadedState(
+        currentState.users,
+        isUpdating: true,
+      ),
+    );
+
+    try {
+      final userRef = _firestore.collection(AppConstants.users).doc(event.userId);
+
+      final discounts = await userRef.collection('discounts').get();
+
+      final restrictions = await userRef.collection('restricted_products').get();
+
+      await _firestore.runTransaction((transaction) async {
+        final userSnapshot = await transaction.get(userRef);
+
+        if (!userSnapshot.exists) {
+          throw Exception('User not found');
+        }
+
+        for (final doc in discounts.docs) {
+          transaction.delete(doc.reference);
+        }
+
+        for (final doc in restrictions.docs) {
+          transaction.delete(doc.reference);
+        }
+
+        transaction.delete(userRef);
+      });
+
+      final updatedUsers = currentState.users.where((user) => user.id != event.userId).toList();
+
+      emit(
+        UsersLoadedState(
+          updatedUsers,
+          isUpdating: false,
+        ),
+      );
+    } catch (e) {
+      emit(
+        UsersErrorState(
+          'Failed to delete user: $e',
+        ),
+      );
     }
   }
 
