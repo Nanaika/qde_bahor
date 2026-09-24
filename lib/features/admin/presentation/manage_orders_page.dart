@@ -438,7 +438,7 @@ class _OrderCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Driver number'.tr()),
+                            Text('Driver phone number'.tr()),
                             const SizedBox(
                               height: 10,
                             ),
