@@ -292,16 +292,21 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                             ),
                             //todo
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                ProductPromoButton(
-                                  product: product,
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                ProductVariantsAvailableButton(
-                                  product: product,
+                                Expanded(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.end,
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      ProductPromoButton(
+                                        product: product,
+                                      ),
+                                      ProductVariantsAvailableButton(
+                                        product: product,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
