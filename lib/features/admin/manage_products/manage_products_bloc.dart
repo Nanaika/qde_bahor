@@ -35,6 +35,10 @@ class ManageProductsBloc extends Bloc<ManageProductsEvent, ManageProductsState> 
     UpdateProductVariantsEvent event,
     Emitter<ManageProductsState> emit,
   ) async {
+    for (int i = 0; i < event.product.variants.length; i++) {
+      print('TEST ================== ${event.product.variants[i].isAvailable}');
+    }
+
     // 1. Запоминаем текущие товары из стейта перед показом загрузки
     final currentState = state;
     List<ProductModel> currentProducts = [];

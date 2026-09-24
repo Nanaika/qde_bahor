@@ -14,6 +14,8 @@ class ProductVariant {
   final double netWeight;
   final double grossWeight;
 
+  final bool isAvailable;
+
   ProductVariant({
     required this.id,
     required this.name,
@@ -25,6 +27,7 @@ class ProductVariant {
     this.itemsInPackage,
     this.buyQuantity = 0,
     this.freeQuantity = 0,
+    this.isAvailable = true,
   });
 
   Map<String, dynamic> toJson() => {
@@ -38,6 +41,7 @@ class ProductVariant {
         'freeQuantity': freeQuantity,
         'netWeight': netWeight,
         'grossWeight': grossWeight,
+        'isAvailable': isAvailable,
       };
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) => ProductVariant(
@@ -51,6 +55,7 @@ class ProductVariant {
         freeQuantity: json['freeQuantity'] as int? ?? 0,
         netWeight: (json['netWeight'] as num).toDouble(),
         grossWeight: (json['grossWeight'] as num).toDouble(),
+        isAvailable: json['isAvailable'] as bool? ?? true,
       );
 
   ProductVariant copyWith({
@@ -64,6 +69,7 @@ class ProductVariant {
     int? freeQuantity,
     double? netWeight,
     double? grossWeight,
+    bool? isAvailable,
   }) {
     return ProductVariant(
       id: id ?? this.id,
@@ -76,6 +82,7 @@ class ProductVariant {
       freeQuantity: freeQuantity ?? this.freeQuantity,
       netWeight: netWeight ?? this.netWeight,
       grossWeight: grossWeight ?? this.grossWeight,
+      isAvailable: isAvailable ?? this.isAvailable,
     );
   }
 }

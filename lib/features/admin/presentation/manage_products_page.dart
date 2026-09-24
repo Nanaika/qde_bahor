@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qde_eco_bahor/core/utils/format_numbers.dart';
 import 'package:qde_eco_bahor/core/utils/time_utils.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_event.dart';
 
@@ -266,7 +267,7 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                       const SizedBox(height: 2),
                                       Text(
                                         'variant_price_volume'.tr(namedArgs: {
-                                          'price': variant.price.toString(),
+                                          'price': formatNumber(variant.price).toString(),
                                           'value': variant.value.toString(),
                                           'unit': variant.unit.name.toString(),
                                         }),
@@ -276,8 +277,8 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                                       ),
                                       Text(
                                         'variant_weights_summary'.tr(namedArgs: {
-                                          'netto': variant.netWeight.toString(),
-                                          'gross': variant.grossWeight.toString(),
+                                          'netto': formatWeightNumber(variant.netWeight).toString(),
+                                          'gross': formatWeightNumber(variant.grossWeight).toString(),
                                         }),
                                         style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                                       ),
@@ -289,10 +290,17 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                             const SizedBox(
                               height: 20,
                             ),
+                            //todo
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 ProductPromoButton(
+                                  product: product,
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                ProductVariantsAvailableButton(
                                   product: product,
                                 ),
                               ],
@@ -634,6 +642,274 @@ class _PromoVariantItemTileState extends State<_PromoVariantItemTile> {
           height: 12,
         ),
       ],
+    );
+  }
+}
+
+class ProductVariantsAvailableButton extends StatelessWidget {
+  final ProductModel product;
+
+  const ProductVariantsAvailableButton({
+    super.key,
+    required this.product,
+  });
+
+  bool get _hasAnyUnavailable => product.variants.any((v) => !v.isAvailable);
+
+  bool get _hasAnyAvailable => product.variants.any((v) => v.isAvailable);
+
+  void _showVariantsBottomSheet(BuildContext context) {
+    if (product.variants.isEmpty) return;
+
+    showProductVariantsBottomSheet(
+      context,
+      product: product,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasUnavailable = _hasAnyUnavailable;
+    final bool hasAvailable = _hasAnyAvailable;
+
+    return InkWell(
+      onTap: () => _showVariantsBottomSheet(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: hasUnavailable ? Colors.red.withValues(alpha: 0.15) : Colors.green.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: hasUnavailable ? Colors.red : Colors.green,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              hasUnavailable ? Icons.remove_circle_outline : Icons.check_circle_outline,
+              size: 18,
+              color: hasUnavailable ? Colors.red.shade800 : Colors.green.shade800,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              !hasAvailable
+                  ? 'not_available'.tr()
+                  : hasUnavailable
+                      ? 'some_unavailable'.tr()
+                      : 'available'.tr(),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: hasUnavailable ? Colors.red.shade900 : Colors.green.shade900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> showProductVariantsBottomSheet(
+  BuildContext context, {
+  required ProductModel product,
+}) {
+  final manageProductsBloc = context.read<ManageProductsBloc>();
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) {
+      return FractionallySizedBox(
+        heightFactor: 0.9,
+        child: ProductVariantsBottomSheet(
+          product: product,
+          onSave: (variants) {
+            context.pop();
+            manageProductsBloc.add(UpdateProductVariantsEvent(product: product.copyWith(variants: variants)));
+          },
+        ),
+      );
+    },
+  );
+}
+
+class ProductVariantsBottomSheet extends StatefulWidget {
+  const ProductVariantsBottomSheet({
+    super.key,
+    required this.product,
+    this.onSave,
+  });
+
+  final void Function(List<ProductVariant> variants)? onSave;
+  final ProductModel product;
+
+  @override
+  State<ProductVariantsBottomSheet> createState() => _ProductVariantsBottomSheetState();
+}
+
+class _ProductVariantsBottomSheetState extends State<ProductVariantsBottomSheet> {
+  late final List<ProductVariant> variants;
+
+  @override
+  void initState() {
+    super.initState();
+
+    variants = widget.product.variants
+        .map(
+          (variant) => variant.copyWith(),
+        )
+        .toList();
+  }
+
+  @override
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(24),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'product_variants'.tr(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  0,
+                  20,
+                  20,
+                ),
+                itemCount: variants.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final variant = variants[index];
+
+                  return ProductVariantItem(
+                    variant: variant,
+                    onChanged: () {
+                      setState(() {
+                        variants[index] = variant.copyWith(
+                          isAvailable: !variant.isAvailable,
+                        );
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                16,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onSave?.call(variants);
+                  },
+                  child: Text('Save'.tr()),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProductVariantItem extends StatelessWidget {
+  const ProductVariantItem({
+    super.key,
+    required this.variant,
+    required this.onChanged,
+  });
+
+  final ProductVariant variant;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isAvailable = variant.isAvailable;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isAvailable ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  variant.name,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isAvailable ? 'available'.tr() : 'not_available'.tr(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isAvailable ? Colors.green.shade600 : Colors.red.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          CupertinoSwitch(
+            value: variant.isAvailable,
+            onChanged: (_) => onChanged(),
+          )
+        ],
+      ),
     );
   }
 }

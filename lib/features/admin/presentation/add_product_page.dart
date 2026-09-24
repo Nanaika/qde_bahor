@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qde_eco_bahor/core/theme/theme_dimensions.dart';
+import 'package:qde_eco_bahor/core/utils/format_numbers.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_bloc.dart';
 import 'package:qde_eco_bahor/features/admin/add_product/add_product_state.dart';
 import 'package:qde_eco_bahor/features/admin/models/product_model.dart';
@@ -355,9 +356,9 @@ class _AddProductPageState extends State<AddProductPage> {
                                   title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                                   subtitle: Text(
                                     'product_details_summary'.tr(namedArgs: {
-                                      'price': item.price.toString(),
-                                      'netto': item.netWeight.toString(),
-                                      'brutto': item.grossWeight.toString(),
+                                      'price': formatNumber(item.price).toString(),
+                                      'netto': formatWeightNumber(item.netWeight).toString(),
+                                      'brutto': formatWeightNumber(item.grossWeight).toString(),
                                     }),
                                   ),
                                   trailing: Row(

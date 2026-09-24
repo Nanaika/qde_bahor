@@ -563,6 +563,7 @@ void showProductBottomSheet(BuildContext context, ProductModel product) {
   );
 }
 
+//todo
 class ProductDetailBottomSheet extends StatefulWidget {
   final ProductModel product;
 
@@ -718,10 +719,18 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.12) : Colors.transparent,
+                    color: !variant.isAvailable
+                        ? Colors.red.withValues(alpha: 0.06)
+                        : isSelected
+                            ? theme.colorScheme.primary.withValues(alpha: 0.12)
+                            : Colors.transparent,
                     border: Border.all(
-                      color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
-                      width: isSelected ? 1.5 : 1,
+                      color: !variant.isAvailable
+                          ? Colors.red.shade300
+                          : isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outlineVariant,
+                      width: 1,
                     ),
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -733,25 +742,32 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                           children: [
                             Text(
                               variant.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
+                                color: !variant.isAvailable ? Colors.red.shade700 : null,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'variant_price_sum'.tr(namedArgs: {
-                                'price': formatNumber(variantPrice).toString(),
-                              }),
-                              style: const TextStyle(
+                              !variant.isAvailable
+                                  ? 'not_available'.tr()
+                                  : 'variant_price_sum'.tr(namedArgs: {
+                                      'price': formatNumber(variantPrice).toString(),
+                                    }),
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
+                                color: !variant.isAvailable ? Colors.red.shade600 : null,
                               ),
                             ),
-                            if ((variant.buyQuantity) > 0 && (variant.freeQuantity) > 0) ...[
+                            if (variant.isAvailable && (variant.buyQuantity) > 0 && (variant.freeQuantity) > 0) ...[
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.orange.shade50,
                                   borderRadius: BorderRadius.circular(6),
@@ -790,14 +806,20 @@ class _ProductDetailBottomSheetState extends State<ProductDetailBottomSheet> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      _QuantityCounter(
-                        count: count,
-                        isSelected: isSelected,
-                        onChanged: (newQty) {
-                          setState(() {
-                            _selectedQuantities[variant.id] = newQty;
-                          });
-                        },
+                      IgnorePointer(
+                        ignoring: !variant.isAvailable,
+                        child: Opacity(
+                          opacity: variant.isAvailable ? 1 : 0.4,
+                          child: _QuantityCounter(
+                            count: count,
+                            isSelected: isSelected,
+                            onChanged: (newQty) {
+                              setState(() {
+                                _selectedQuantities[variant.id] = newQty;
+                              });
+                            },
+                          ),
+                        ),
                       ),
                     ],
                   ),
