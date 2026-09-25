@@ -7,6 +7,7 @@ import 'package:qde_eco_bahor/features/auth/data/models/user_model.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
+import '../../../core/services/telegram_service.dart';
 import '../../../core/widgets/language_toggle.dart';
 import '../../../core/widgets/theme_toggle.dart';
 
@@ -36,86 +37,80 @@ class _HomePageAdminState extends State<HomePageAdmin> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    return SafeArea(
-      bottom: false,
-      right: false,
-      left: false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Admin Dashboard'.tr(),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          actions: const [
-            LanguageToggle(),
-            Padding(
-              padding: EdgeInsets.only(right: 8.0),
-              child: ThemeToggle(),
-            ),
-          ],
-          elevation: 0,
-          centerTitle: false,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Admin Dashboard'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Actions'.tr(),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    // color: Colors.grey.shade700,
-                  ),
+        actions: const [
+          LanguageToggle(),
+          Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: ThemeToggle(),
+          ),
+        ],
+        elevation: 0,
+        centerTitle: false,
+      ),
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick Actions'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  // color: Colors.grey.shade700,
                 ),
-                const SizedBox(height: 12),
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: ThemeDimensions.paddingM,
-                  crossAxisSpacing: ThemeDimensions.paddingM,
-                  childAspectRatio: 1.1,
-                  children: [
-                    if (user?.userType == UserType.accounting)
-                      _AdminMenuCard(
-                        title: 'Add type'.tr(),
-                        subtitle: 'Category setup'.tr(),
-                        icon: Icons.category_outlined,
-                        color: isDark ? Colors.indigo.shade300 : Colors.indigo,
-                        onTap: () => context.push('/add_product_type'),
-                      ),
-                    if (user?.userType == UserType.accounting)
-                      _AdminMenuCard(
-                        title: 'Manage products'.tr(),
-                        subtitle: 'Edit & Delete'.tr(),
-                        icon: Icons.inventory_2_outlined,
-                        color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
-                        onTap: () => context.push('/manage_products'),
-                      ),
+              ),
+              const SizedBox(height: 12),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: ThemeDimensions.paddingM,
+                crossAxisSpacing: ThemeDimensions.paddingM,
+                childAspectRatio: 1.1,
+                children: [
+                  if (user?.userType == UserType.accounting)
                     _AdminMenuCard(
-                      title: 'Manage orders'.tr(),
-                      subtitle: 'Track status'.tr(),
-                      icon: Icons.receipt_long_outlined,
-                      color: isDark ? Colors.purple.shade300 : Colors.purple,
-                      onTap: () => context.push('/manage_orders'),
+                      title: 'Add type'.tr(),
+                      subtitle: 'Category setup'.tr(),
+                      icon: Icons.category_outlined,
+                      color: isDark ? Colors.indigo.shade300 : Colors.indigo,
+                      onTap: () => context.push('/add_product_type'),
                     ),
-                    if (user?.userType == UserType.accounting)
-                      _AdminMenuCard(
-                        title: 'Moderate Users'.tr(),
-                        subtitle: 'Review and verify accounts'.tr(),
-                        icon: Icons.admin_panel_settings_outlined,
-                        // Или Icons.how_to_reg_outlined
-                        color: isDark ? Colors.cyan.shade300 : Colors.cyan,
-                        onTap: () => context.push('/moderate_users'),
-                      ),
-                  ],
-                ),
-              ],
-            ),
+                  if (user?.userType == UserType.accounting)
+                    _AdminMenuCard(
+                      title: 'Manage products'.tr(),
+                      subtitle: 'Edit & Delete'.tr(),
+                      icon: Icons.inventory_2_outlined,
+                      color: isDark ? Colors.amber.shade400 : Colors.amber.shade800,
+                      onTap: () => context.push('/manage_products'),
+                    ),
+                  _AdminMenuCard(
+                    title: 'Manage orders'.tr(),
+                    subtitle: 'Track status'.tr(),
+                    icon: Icons.receipt_long_outlined,
+                    color: isDark ? Colors.purple.shade300 : Colors.purple,
+                    onTap: () => context.push('/manage_orders'),
+                  ),
+                  if (user?.userType == UserType.accounting)
+                    _AdminMenuCard(
+                      title: 'Moderate Users'.tr(),
+                      subtitle: 'Review and verify accounts'.tr(),
+                      icon: Icons.admin_panel_settings_outlined,
+                      // Или Icons.how_to_reg_outlined
+                      color: isDark ? Colors.cyan.shade300 : Colors.cyan,
+                      onTap: () => context.push('/moderate_users'),
+                    ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

@@ -8,8 +8,6 @@ import 'package:qde_eco_bahor/features/auth/presentation/bloc/auth_state.dart';
 
 import '../../../core/utils/format_numbers.dart';
 import '../../admin/discount/discount_model.dart';
-import '../../client/presentation/client_home_page.dart';
-import '../../client/presentation/products_page.dart';
 import '../cart_bloc.dart';
 
 class CartScreen extends StatefulWidget {
@@ -50,17 +48,23 @@ class _CartScreenState extends State<CartScreen> {
         listener: (context, state) {
           if (state.status == CartStatus.success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Your order has been placed!'.tr())),
+              SnackBar(
+                content: Text('Your order has been placed!'.tr()),
+              ),
             );
           } else if (state.status == CartStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${state.errorMessage}')),
+              SnackBar(
+                content: Text('Error: ${state.errorMessage}'),
+              ),
             );
           }
         },
         builder: (context, state) {
           if (state.status == CartStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           if (state.items.isEmpty) {
@@ -72,25 +76,36 @@ class _CartScreenState extends State<CartScreen> {
           double totalPriceWithDiscount = 0;
           int totalBonusCount = 0;
           int totalPaidCount = 0;
+          double totalNetWeight = 0;
+          double totalGrossWeight = 0;
 
           for (final item in state.items) {
-            final basePrice = item.variant.price ?? 0;
+            final basePrice = item.variant.price;
 
             final discount = discounts.firstWhereOrNull(
               (d) => d.productId == item.product.id && d.variantId == item.variant.id,
             );
 
             final discountPercent = discount?.discountPercent ?? 0;
+
             final finalPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
 
             totalPriceWithDiscount += finalPrice * item.quantity;
+
             totalPaidCount += item.quantity;
 
-            final buyQty = item.variant.buyQuantity ?? 0;
-            final freeQty = item.variant.freeQuantity ?? 0;
-            if (buyQty > 0 && freeQty > 0) {
-              totalBonusCount += (item.quantity ~/ buyQty) * freeQty;
-            }
+            final buyQty = item.variant.buyQuantity;
+            final freeQty = item.variant.freeQuantity;
+
+            final bonusQuantity = (buyQty > 0 && freeQty > 0) ? (item.quantity ~/ buyQty) * freeQty : 0;
+
+            totalBonusCount += bonusQuantity;
+
+            final totalQuantity = item.quantity + bonusQuantity;
+
+            totalNetWeight += (item.variant.netWeight) * totalQuantity;
+
+            totalGrossWeight += (item.variant.grossWeight) * totalQuantity;
           }
 
           final hasDiscount = totalPriceWithDiscount < state.totalAmount;
@@ -105,18 +120,29 @@ class _CartScreenState extends State<CartScreen> {
                   itemBuilder: (context, index) {
                     final item = state.items[index];
 
-                    // Расчет скидки и бонусов для конкретного элемента
-                    final basePrice = item.variant.price ?? 0;
+                    final basePrice = item.variant.price;
+
                     final itemDiscount = discounts.firstWhereOrNull(
                       (d) => d.productId == item.product.id && d.variantId == item.variant.id,
                     );
+
                     final discountPercent = itemDiscount?.discountPercent ?? 0;
+
                     final finalUnitPrice = discountPercent > 0 ? basePrice * (1 - discountPercent / 100) : basePrice;
+
                     final itemTotalPriceWithDiscount = finalUnitPrice * item.quantity;
 
-                    final buyQty = item.variant.buyQuantity ?? 0;
-                    final freeQty = item.variant.freeQuantity ?? 0;
+                    final buyQty = item.variant.buyQuantity;
+
+                    final freeQty = item.variant.freeQuantity;
+
                     final itemBonusQuantity = (buyQty > 0 && freeQty > 0) ? (item.quantity ~/ buyQty) * freeQty : 0;
+
+                    final itemTotalQuantity = item.quantity + itemBonusQuantity;
+
+                    final itemNetWeight = (item.variant.netWeight) * itemTotalQuantity;
+
+                    final itemGrossWeight = (item.variant.grossWeight) * itemTotalQuantity;
 
                     return Card(
                       child: Padding(
@@ -125,55 +151,68 @@ class _CartScreenState extends State<CartScreen> {
                           children: [
                             Row(
                               children: [
-                                // Изображение
                                 Container(
                                   width: 60,
                                   height: 60,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: item.product.photoUrl.isNotEmpty
                                       ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           child: Image.network(
                                             item.product.photoUrl,
                                             fit: BoxFit.cover,
                                           ),
                                         )
-                                      : const Icon(Icons.image),
+                                      : const Icon(
+                                          Icons.image,
+                                        ),
                                 ),
                                 const SizedBox(width: 12),
-
-                                // Описание и цена
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.product.name,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
-                                        'item_variant_name'.tr(namedArgs: {
-                                          'name': item.variant.name.toString(),
-                                        }),
+                                        'item_variant_name'.tr(
+                                          namedArgs: {
+                                            'name': item.variant.name.toString(),
+                                          },
+                                        ),
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Theme.of(context).colorScheme.outline,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outline,
                                         ),
                                       ),
-
-                                      const SizedBox(height: 4),
-
-                                      // Блок вывода количества: отображается ВСЕГДА
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: itemBonusQuantity > 0 ? Colors.orange.shade50 : Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                           border: Border.all(
                                             color:
                                                 itemBonusQuantity > 0 ? Colors.orange.shade200 : Colors.grey.shade300,
@@ -182,13 +221,23 @@ class _CartScreenState extends State<CartScreen> {
                                         ),
                                         child: Text(
                                           itemBonusQuantity > 0
-                                              ? 'item_qty_with_bonus'.tr(namedArgs: {
-                                                  'quantity': formatCountNumber(item.quantity).toString(),
-                                                  'bonus': formatCountNumber(itemBonusQuantity).toString(),
-                                                })
-                                              : 'item_qty_standard'.tr(namedArgs: {
-                                                  'quantity': formatCountNumber(item.quantity).toString(),
-                                                }),
+                                              ? 'item_qty_with_bonus'.tr(
+                                                  namedArgs: {
+                                                    'quantity': formatCountNumber(
+                                                      item.quantity,
+                                                    ).toString(),
+                                                    'bonus': formatCountNumber(
+                                                      itemBonusQuantity,
+                                                    ).toString(),
+                                                  },
+                                                )
+                                              : 'item_qty_standard'.tr(
+                                                  namedArgs: {
+                                                    'quantity': formatCountNumber(
+                                                      item.quantity,
+                                                    ).toString(),
+                                                  },
+                                                ),
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
@@ -197,13 +246,33 @@ class _CartScreenState extends State<CartScreen> {
                                           ),
                                         ),
                                       ),
-
-                                      const SizedBox(height: 4),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        'order_total_weights'.tr(namedArgs: {
+                                          'netto': formatWeightNumber(itemNetWeight),
+                                          'brutto': formatWeightNumber(itemGrossWeight),
+                                        }),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outline,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
                                       if (discountPercent > 0) ...[
                                         Text(
-                                          'item_total_price_formatted'.tr(namedArgs: {
-                                            'price': formatNumber(item.totalPrice),
-                                          }),
+                                          'item_total_price_formatted'.tr(
+                                            namedArgs: {
+                                              'price': formatNumber(
+                                                item.totalPrice,
+                                              ),
+                                            },
+                                          ),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey.shade600,
@@ -212,19 +281,23 @@ class _CartScreenState extends State<CartScreen> {
                                         ),
                                       ],
                                       Text(
-                                        'item_total_price_discount_formatted'.tr(namedArgs: {
-                                          'price': formatNumber(itemTotalPriceWithDiscount),
-                                        }),
+                                        'item_total_price_discount_formatted'.tr(
+                                          namedArgs: {
+                                            'price': formatNumber(
+                                              itemTotalPriceWithDiscount,
+                                            ),
+                                          },
+                                        ),
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-
-                                // Инпут с динамической шириной
                               ],
                             ),
                             const SizedBox(
@@ -237,7 +310,11 @@ class _CartScreenState extends State<CartScreen> {
                                   quantity: item.quantity,
                                   onChanged: (newQty) {
                                     final delta = newQty - item.quantity;
-                                    context.read<CartCubit>().updateQuantity(item.variant.id, delta);
+
+                                    context.read<CartCubit>().updateQuantity(
+                                          item.variant.id,
+                                          delta,
+                                        );
                                   },
                                 ),
                               ],
@@ -249,8 +326,6 @@ class _CartScreenState extends State<CartScreen> {
                   },
                 ),
               ),
-
-              // Нижняя панель оформления
               Container(
                 padding: EdgeInsets.only(
                   left: 16,
@@ -287,32 +362,60 @@ class _CartScreenState extends State<CartScreen> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
                                               color: Colors.transparent,
-                                              borderRadius: BorderRadius.circular(4),
-                                              border: Border.all(color: Colors.transparent, width: 0.8),
+                                              borderRadius: BorderRadius.circular(
+                                                4,
+                                              ),
+                                              border: Border.all(
+                                                color: Colors.transparent,
+                                                width: 0.8,
+                                              ),
                                             ),
                                             child: Text(
-                                              'order_total_paid_count'.tr(namedArgs: {
-                                                'count': formatCountNumber(totalPaidCount).toString(),
-                                              }),
-                                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                              'order_total_paid_count'.tr(
+                                                namedArgs: {
+                                                  'count': formatCountNumber(
+                                                    totalPaidCount,
+                                                  ).toString(),
+                                                },
+                                              ),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade600,
+                                              ),
                                             ),
                                           ),
                                           if (totalBonusCount > 0) ...[
-                                            const SizedBox(width: 4),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
                                               decoration: BoxDecoration(
                                                 color: Colors.orange.shade50,
-                                                borderRadius: BorderRadius.circular(4),
-                                                border: Border.all(color: Colors.orange.shade200, width: 0.8),
+                                                borderRadius: BorderRadius.circular(
+                                                  4,
+                                                ),
+                                                border: Border.all(
+                                                  color: Colors.orange.shade200,
+                                                  width: 0.8,
+                                                ),
                                               ),
                                               child: Text(
-                                                'order_total_bonus_count'.tr(namedArgs: {
-                                                  'bonus': formatCountNumber(totalBonusCount).toString(),
-                                                }),
+                                                'order_total_bonus_count'.tr(
+                                                  namedArgs: {
+                                                    'bonus': formatCountNumber(
+                                                      totalBonusCount,
+                                                    ).toString(),
+                                                  },
+                                                ),
                                                 style: TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.bold,
@@ -327,12 +430,31 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                'order_total_weights'.tr(namedArgs: {
+                                  'netto': formatWeightNumber(totalNetWeight),
+                                  'brutto': formatWeightNumber(totalGrossWeight),
+                                }),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
                               if (hasDiscount) ...[
                                 Text(
-                                  'state_total_amount_formatted'.tr(namedArgs: {
-                                    'amount': formatNumber(state.totalAmount),
-                                  }),
+                                  'state_total_amount_formatted'.tr(
+                                    namedArgs: {
+                                      'amount': formatNumber(
+                                        state.totalAmount,
+                                      ),
+                                    },
+                                  ),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -342,9 +464,13 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                               ],
                               Text(
-                                'total_price_with_discount_formatted'.tr(namedArgs: {
-                                  'price': formatNumber(totalPriceWithDiscount),
-                                }),
+                                'total_price_with_discount_formatted'.tr(
+                                  namedArgs: {
+                                    'price': formatNumber(
+                                      totalPriceWithDiscount,
+                                    ),
+                                  },
+                                ),
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -363,14 +489,20 @@ class _CartScreenState extends State<CartScreen> {
                           height: 48,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7000FF),
+                              backgroundColor: const Color(
+                                0xFF7000FF,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  12,
+                                ),
                               ),
                             ),
                             onPressed: () {
                               final authState = context.read<AuthBloc>().state as AuthAuthenticatedState;
+
                               final user = authState.user;
+
                               final order = OrderModel(
                                 id: '',
                                 items: state.items,
@@ -381,6 +513,7 @@ class _CartScreenState extends State<CartScreen> {
                                 totalBonusCount: totalBonusCount,
                                 totalQuantityCount: totalPaidCount + totalBonusCount,
                               );
+
                               context.read<CartCubit>().addOrder(order);
                             },
                             child: Text(
@@ -425,14 +558,20 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.quantity.toString());
+    _controller = TextEditingController(
+      text: widget.quantity.toString(),
+    );
   }
 
   @override
-  void didUpdateWidget(covariant _CartQuantityInput oldWidget) {
+  void didUpdateWidget(
+    covariant _CartQuantityInput oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
+
     if (oldWidget.quantity != widget.quantity) {
       final currentTextVal = int.tryParse(_controller.text) ?? 0;
+
       if (currentTextVal != widget.quantity) {
         _controller.text = widget.quantity.toString();
       }
@@ -446,18 +585,23 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
   }
 
   void _onTextChanged(String val) {
-    setState(() {}); // Перерисовываем для обновления ширины поля
+    setState(() {});
 
     if (val.isEmpty) return;
 
     final parsed = int.tryParse(val);
+
     if (parsed == null) return;
 
     if (parsed > 1000000) {
       _controller.text = '1000000';
+
       _controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: _controller.text.length),
+        TextPosition(
+          offset: _controller.text.length,
+        ),
       );
+
       widget.onChanged(1000000);
       return;
     }
@@ -469,18 +613,26 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
 
   void _updateFromButtons(int value) {
     final clamped = value.clamp(1, 1000000);
+
     _controller.text = clamped.toString();
+
     _controller.selection = TextSelection.fromPosition(
-      TextPosition(offset: _controller.text.length),
+      TextPosition(
+        offset: _controller.text.length,
+      ),
     );
+
     widget.onChanged(clamped);
+
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // Автоматический расчет ширины: базовые 24px + по 9px на каждую цифру
+// Автоматический расчет ширины:
+// базовые 24px + по 9px на каждую цифру
     final textLength = _controller.text.isEmpty ? 1 : _controller.text.length;
+
     final dynamicWidth = (24.0 + (textLength * 9.0)).clamp(36.0, 110.0);
 
     return Row(
@@ -489,8 +641,15 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
         IconButton(
           constraints: const BoxConstraints(),
           padding: const EdgeInsets.all(4),
-          icon: const Icon(Icons.remove_circle_outline, size: 20),
-          onPressed: widget.quantity > 1 ? () => _updateFromButtons(widget.quantity - 1) : null,
+          icon: const Icon(
+            Icons.remove_circle_outline,
+            size: 20,
+          ),
+          onPressed: widget.quantity > 1
+              ? () => _updateFromButtons(
+                    widget.quantity - 1,
+                  )
+              : null,
         ),
         SizedBox(
           width: dynamicWidth,
@@ -498,10 +657,16 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
             controller: _controller,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
             decoration: const InputDecoration(
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 2,
+                horizontal: 0,
+              ),
               border: InputBorder.none,
               focusedBorder: InputBorder.none,
               enabledBorder: InputBorder.none,
@@ -514,8 +679,15 @@ class _CartQuantityInputState extends State<_CartQuantityInput> {
         IconButton(
           constraints: const BoxConstraints(),
           padding: const EdgeInsets.all(4),
-          icon: const Icon(Icons.add_circle_outline, size: 20),
-          onPressed: widget.quantity < 1000000 ? () => _updateFromButtons(widget.quantity + 1) : null,
+          icon: const Icon(
+            Icons.add_circle_outline,
+            size: 20,
+          ),
+          onPressed: widget.quantity < 1000000
+              ? () => _updateFromButtons(
+                    widget.quantity + 1,
+                  )
+              : null,
         ),
       ],
     );

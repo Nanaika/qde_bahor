@@ -50,3 +50,8 @@ class TelegramService {
 
   static String? get initData => _webApp?.initData?.toDart;
 }
+
+@JS('getTelegramTopInset')
+external double getTelegramTopInset();
+@JS('getTelegramDebug')
+external String getTelegramDebug();
