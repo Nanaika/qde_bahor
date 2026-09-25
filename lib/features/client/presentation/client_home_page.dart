@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qde_eco_bahor/features/cart/presentation/cart_screen.dart';
 import 'package:qde_eco_bahor/features/client/presentation/products_page.dart';
 import 'package:qde_eco_bahor/features/client/presentation/profile_page.dart';
 
@@ -18,11 +19,7 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    ProductsPage(),
-    OrdersPage(),
-    ProfilePage(),
-  ];
+  final List<Widget> _pages = const [ProductsPage(), OrdersPage(), CartScreen(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +31,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           isModerated = state.user.isModerated;
         }
 
-        final activeIndex = isModerated ? _currentIndex : 2;
+        final activeIndex = isModerated ? _currentIndex : 3;
 
         return Scaffold(
           body: IndexedStack(
@@ -44,7 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: activeIndex,
             onTap: (index) {
-              if (!isModerated && index != 2) {
+              if (!isModerated && index != 3) {
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -80,6 +77,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ),
                 activeIcon: const Icon(Icons.receipt_long_rounded),
                 label: 'Orders'.tr(),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.shopping_cart_outlined),
+                activeIcon: const Icon(Icons.shopping_cart_rounded),
+                label: 'Cart'.tr(),
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.person_outline_rounded),

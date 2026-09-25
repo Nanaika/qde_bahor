@@ -96,14 +96,14 @@ class _ProductsPageState extends State<ProductsPage> with SingleTickerProviderSt
         backgroundColor: Colors.transparent,
         forceMaterialTransparency: true,
         centerTitle: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.push('/cart');
-            },
-            icon: const Icon(Icons.shopping_cart_outlined),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       context.push('/cart');
+        //     },
+        //     icon: const Icon(Icons.shopping_cart_outlined),
+        //   ),
+        // ],
         title: Text(
           'Products'.tr(),
           style: const TextStyle(fontWeight: FontWeight.bold),
